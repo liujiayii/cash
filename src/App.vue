@@ -7,6 +7,8 @@
 </template>
 
 <style lang="scss">
+  .flex{display: flex;display:-webkit-flex;justify-content: space-between;flex-wrap: wrap}
+
   html, body, #app {
     height: 100%;
     width: 100%;

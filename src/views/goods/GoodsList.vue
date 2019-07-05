@@ -1,13 +1,341 @@
 <template>
-  <div>商品列表</div>
+  <div>
+    <div class="top">
+      <el-form :inline="true" :model="searchForm" size="small" >
+        <el-form-item  label="商品名称"  style="display: inline-block;margin-left:10px">
+        <el-input placeholder="商品名称" type="number" v-model="searchForm.phone"></el-input>
+       </el-form-item>
+          <el-form-item label="店铺"  style="display: inline-block;margin-left:10px">
+            <el-select v-model="searchForm.shop" placeholder="请选择店铺">
+              <el-option v-for="item in productTypeId" :key="item.value" :label="item.label"
+                         :value="item.value"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="商品种类"  style="display: inline-block;margin-left:10px">
+            <el-select v-model="searchForm.productTypeId" placeholder="请选择商品种类">
+              <el-option v-for="item in productTypeId" :key="item.value" :label="item.label"
+                         :value="item.value"></el-option>
+            </el-select>
+          </el-form-item>
+      </el-form>
+    </div>
+    <span class="add" @click="dialogFormVisible = true">添加+</span>
+    <el-table
+            v-loading="loading"
+            :data="tableData"
+            style="width: 100%">
+      <el-table-column
+              prop="name"
+              label="商品名称"
+              width="160">
+      </el-table-column>
+      <el-table-column
+            prop="barCode"
+            label="商品条码"
+            width="160">
+    </el-table-column>
+      <el-table-column
+              prop="image"
+              label="商品图片"
+              width="160">
+        <template slot-scope="scope">
+<!--          {{scope.row.image}}-->
+          <img :src="scope.row.image" alt="" class="imgs">
+        </template>
+      </el-table-column>
+      <el-table-column
+              prop="pleased"
+              label="进货价"
+              width="160">
+      </el-table-column>
+      <el-table-column
+              prop="salePrice"
+              label="销售价"
+              width="160">
+      </el-table-column>
+      <el-table-column
+              prop="memberPrice"
+              label="会员价"
+              width="160">
+      </el-table-column>
+      <el-table-column
+              prop="specification"
+              label="规格"
+              width="160">
+      </el-table-column>
+      <el-table-column
+              prop="color"
+              label="颜色"
+              width="160">
+      </el-table-column>
+      <el-table-column
+              prop="state"
+              label="是否上架"  width="200">
+        <template slot-scope="scope">
+          <el-switch
+                  v-model="scope.row.state==1?true:false"
+                  disabled
+                  class="switchs"
+                  active-text="已上架"
+                  inactive-text="未上架"
+                >
+          </el-switch>
+        </template>
+      </el-table-column>
+      <el-table-column
+              prop="productType"
+              label="商品种类"
+              width="160">
+      </el-table-column>
+      <el-table-column label="操作"  fixed="right"   width="180">
+        <template slot-scope="scope">
+          <el-button
+                  size="mini"
+                  @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+          <el-button
+                  size="mini"
+                  type="danger"
+                  @click="handleDelete(scope.row)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-pagination
+            @current-change="getList"
+            :current-page="pagination.current"
+            layout="total, prev, pager, next, jumper"
+            :total="pagination.total">
+    </el-pagination>
+    <el-dialog title="收货地址" :visible.sync="dialogFormVisible" :modal-append-to-body="modalAppend">
+      <el-form :model="form" class="demo-ruleForm flex">
+        <el-form-item label="商品名称" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品名称不能为空'}] "
+                      class="formlist">
+          <el-input v-model="form.name" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="商品条码" :label-width="formLabelWidth" class="formlist">
+          <el-input v-model="form.barCode" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="商品进货价" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品进货价不能为空'}] "
+                      class="formlist">
+          <el-input v-model="form.pleased" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="商品销售价" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品销售价不能为空'}] "
+                      class="formlist">
+          <el-input v-model="form.salePrice" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="商品会员价" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品会员价不能为空'}] "
+                      class="formlist">
+          <el-input v-model="form.memberPrice" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="商品状态" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品状态不能为空'}] "
+                      class="formlist">
+          <el-switch
+                  v-model="form.state"
+                  class="switchs"
+                  active-text="已上架"
+                  inactive-text="未上架"
+                  @change="status()">
+
+          </el-switch>
+        </el-form-item>
+        <el-form-item label="商品分类" :label-width="formLabelWidth" class="formlist"
+                      :rules="[ { required: true, message: '商品分类不能为空'}] ">
+          <el-select v-model="form.productTypeId" placeholder="请选择商品分类">
+            <el-option v-for="item in productTypeId" :key="item.value" :label="item.label"
+                       :value="item.value"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="商品库存" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品库存不能为空'}] "
+                      class="formlist">
+          <el-input v-model="form.quantity" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="商品规格" class="formlist" :label-width="formLabelWidth"
+                      :rules="[ { required: true, message: '商品规格不能为空'}] ">
+          <el-input v-model="form.specification" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="商品颜色" class="formlist" :label-width="formLabelWidth"
+                      :rules="[ { required: true, message: '商品颜色不能为空'}] ">
+          <el-input v-model="form.color" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="商品图片" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品图片不能为空'}] "
+                      class="formlistbig">
+          <el-upload
+                  action="http://192.168.1.135:8080/CashierOu/upload.action"
+                  list-type="picture-card"
+                  :limit="limit"
+                  :on-success="handlesuccess"
+                  :on-preview="handlePictureCardPreview"
+                  :on-remove="handleRemove">
+            <i class="el-icon-plus"></i>
+          </el-upload>
+          <el-dialog :visible.sync="dialogVisible">
+            <img width="100%" :src="dialogImageUrl" alt="">
+          </el-dialog>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addCommodity">确 定</el-button>
+      </div>
+    </el-dialog>
+  </div>
 </template>
 
 <script>
   export default {
-    name: "GoodsList"
+    name: "GoodsList",
+    data() {
+      return {
+        searchForm: {},
+        loading: false,
+        pagination: {},
+        tableData: [],
+        limit: 1,
+        productTypeId: [],
+        dialogImageUrl: '',
+        dialogVisible: false,
+        modalAppend: false,
+        dialogFormVisible: false,
+        form: {
+          name: '',
+          barCode: '',
+          pleased: '',
+          salePrice: '',
+          memberPrice: '',
+          specification: '',
+          color: '',
+          state: false,
+          productTypeId: '',
+          quantity: ''
+        },
+        imgArr: [],
+        formLabelWidth: '120px',
+      }
+    },
+    methods: {
+      getList(num){
+        this.loading = true
+        this.$ajax.post("getProductByCondition.action", {
+          page:1||num,
+          limit:10
+          }
+        ).then(res => {
+          if (res.data.code === 1) {
+            const pagination = {...this.pagination};
+            pagination.total = res.data.count
+            pagination.current = num;
+            this.loading = false;
+            this.tableData=res.data.listProduct
+            this.pagination = pagination;
+          }
+
+        })
+      },
+      //商品分类
+      getClassList() {
+        this.$ajax.post("listProductType.action", {}
+        ).then(res => {
+          for (let i = 0; i < res.data.listProductType.length; i++) {
+            let jsons = {}
+            jsons.value = res.data.listProductType[i].id
+            jsons.label = res.data.listProductType[i].productTypeName
+            this.productTypeId.push(jsons)
+          }
+
+        })
+      },
+      status(typ) {},
+      //添加商品
+      addCommodity() {
+        if (this.form.state == true) {
+          this.form.state = 1
+        } else {
+          this.form.state = 2
+        }
+        this.$ajax.post("addProduct.action", this.form
+        ).then(res => {
+          if (res.data.code == 1) {
+            this.$message({
+              message: res.data.msg,
+              type: 'success'
+            });
+            this.dialogFormVisible = false,
+            this.form = {}
+          } else {
+            this.$message({
+              message: res.data.msg,
+              type: 'warning'
+            });
+          }
+
+        })
+      },
+      //图片上传
+      handlesuccess(file, fileList) {
+        this.form.image = file.data
+      },
+      handleRemove(file, fileList) {
+        console.log(file, fileList);
+      },
+      handlePictureCardPreview(file) {
+        this.dialogImageUrl = file.url;
+        this.dialogVisible = true;
+      },
+      handleEdit(index, row) {
+        console.log(index, row);
+      },
+      handleDelete(row) {
+        this.$confirm('是否删除?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$ajax.post('/delProduct.action', {productId: row.id})
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.$message.success(res.data.msg);
+                this.getList(this.pagination.current)
+              }
+            })
+        }).catch(() => {
+          this.$message.info('已取消');
+        });
+      }
+    },
+    mounted() {
+      this.getList(1)
+      this.getClassList()
+    }
+
+
   }
 </script>
 
 <style scoped>
+  .add{float: right;margin: 0 15px 5px 0;cursor: pointer;position: relative;bottom: 10px;border-radius:18px;height:35px;linght-height:40px;padding:0 15px;font-size:14px}
+  .formlistbig {
+    width: 100%
+  }
 
+  .el-tag + .el-tag {
+    margin-left: 10px;
+  }
+
+  .button-new-tag {
+    margin-left: 10px;
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .input-new-tag {
+    width: 90px;
+    margin-left: 10px;
+    vertical-align: bottom;
+  }
+
+  .formlist {
+    width: 50%
+  }
 </style>
