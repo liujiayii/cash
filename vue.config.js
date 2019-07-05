@@ -30,15 +30,15 @@ module.exports = {
   lintOnSave: false,
   devServer: {
     port: 8081,
-    /*proxy: {
+    proxy: {
       '/': {
-        target: 'http://192.168.1.109:8080',
+        target: 'http://192.168.1.184:8080/',
         changeOrigin: true,
         pathRewrite: {
           '^/': ''
         }
       }
-    }*/
+    }
   },
   chainWebpack: config => {
     if (process.env.NODE_ENV === 'production') {

@@ -17,7 +17,7 @@ const instance = axios.create({
 // http response 拦截器
 const res = response => {
   if (response.data.code === -2) {
-    window.$Vue.$router.push({path:'/login'})
+    window.$Vue.$router.push({path: '/login'})
     window.$Vue.$message.error(response.data.msg)
   } else if (response.data.code !== 1) {
     window.$Vue.$message.error(response.data.msg)
@@ -26,7 +26,10 @@ const res = response => {
 }
 const err = error => {
   if (error.response) {
-    window.$Vue.$message.error(error)
+    if (error.response.status === 500) {
+      window.$Vue.$router.push({path: '/500'})
+    }
+    window.$Vue.$message.error(error.response.statusText)
   }
   return Promise.reject(error.response.data)   // 返回接口返回的错误信息
 }

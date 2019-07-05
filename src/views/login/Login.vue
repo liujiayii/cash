@@ -24,13 +24,6 @@
               <el-form-item label="密码" prop="password">
                 <el-input type="password" v-model="form.password" prefix-icon="el-icon-lock"></el-input>
               </el-form-item>
-              <!--<el-form-item label="验证码" prop="auth_code" class="code">
-                <el-input v-model="form.auth_code" :maxlength="2">
-                  <template slot="prefix">
-                    <img src="/showAuthCode" alt="" height="40" @click="getCode" id="code">
-                  </template>
-                </el-input>
-              </el-form-item>-->
               <el-form-item>
                 <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
                 <el-button @click="resetForm('ruleForm')">重置</el-button>
@@ -43,29 +36,25 @@
   </div>
 </template>
 <script>
-  import {generator} from '../../router/'
-  import {formatDate} from '../../config/utils'
+  import {mixin} from '../../config/utils'
 
   export default {
     name: 'Login',
+    mixins: [mixin],
     data() {
       return {
         form: {
-          username: '',
-          password: '',
-          auth_code: ''
+          username: 'lisi',
+          password: '123456'
         },
         rules: {
           username: [
             {required: true, message: '请输入用户名', trigger: 'blur'},
-            {min: 5, max: 12, message: '长度在 5 到 12 个字符', trigger: 'blur'}
+            {min: 1, max: 12, message: '长度在 5 到 12 个字符', trigger: 'blur'}
           ],
           password: [
             {required: true, message: '请输入密码', trigger: 'blur'},
-            {min: 6, max: 12, message: '长度在 6 到 12 个字符', trigger: 'blur'}
-          ],
-          auth_code: [
-            {required: true, message: '请输入验证码', trigger: 'blur'},
+            {min: 1, max: 12, message: '长度在 6 到 12 个字符', trigger: 'blur'}
           ]
         },
         time: '00:00:00'
@@ -75,17 +64,15 @@
       submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            /*this.$ajax.post('/login', this.form)
+            this.$ajax.post('/login.action', this.form)
               .then((res) => {
-                if (res.data.code === 1) {*/
+                if (res.data.code === 1) {
                   window.sessionStorage.setItem('userName', this.form.username)
-                 // window.sessionStorage.setItem('menu', JSON.stringify(res.data.data))
-                  //this.$router.addRoutes(generator(res.data.data))
                   this.$router.push({path: '/Home'})
-               /* } else {
-                  this.getCode()
+                } else {
+                  this.$message.error(res.data.data.message)
                 }
-              })*/
+              })
             return false;
           }
         });
@@ -93,14 +80,11 @@
       resetForm(formName) {
         this.$refs[formName].resetFields();
       },
-      getCode() {
-        document.getElementById('code').src = '/showAuthCode?t=' + new Date().getTime()
-      }
     },
     mounted() {
-      window.sessionStorage.clear()
+      sessionStorage.clear()
       let timer = setInterval(() => {
-        this.time = formatDate(new Date(), 'hh:mm:ss')
+        this.time = this.formatDate(new Date(), 'hh:mm:ss')
       }, 1000)
     }
   }

@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-header>
-      <div class="logo">LOGO</div>
+      <div class="logo">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>LOGO</b></div>
       <div>
         <div class="point" @click="fullScreen">
           <i class="el-icon-full-screen"></i>
@@ -98,13 +98,8 @@
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-            this.$ajax.post('/logout')
-              .then((res) => {
-                if (res.data.code === 1) {
-                  window.sessionStorage.clear()
-                  this.$router.push({path: "/login"})
-                }
-              })
+            window.sessionStorage.clear()
+            this.$router.push({path: "/login"})
           }).catch(() => {
             this.$message.info('已取消')
           });
@@ -132,10 +127,6 @@
     background-color: #fff;
     color: #666;
     line-height: 60px;
-  }
-
-  .logo {
-
   }
 
   .el-header {
