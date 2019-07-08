@@ -11,6 +11,24 @@
         <el-button type="primary" @click="submit('ruleForm')">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog :visible.sync="dialogFormVisible2" :modal-append-to-body="false">
+      <div v-for="item of accessList" :key="item.parentIds">
+        <el-divider content-position="left">
+          <el-checkbox-group v-model="selectAccess.ids">
+            <el-checkbox :label="item.parentIds">{{item.parent_names}}</el-checkbox>
+          </el-checkbox-group>
+        </el-divider>
+        <el-checkbox-group v-model="selectAccess.ids">
+          <el-checkbox v-for="item_c of item.permissions" :key="item_c.id" :label="item_c.id">
+            {{item_c.name}}
+          </el-checkbox>
+        </el-checkbox-group>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible2 = false">取 消</el-button>
+        <el-button type="primary" @click="submit2">确 定</el-button>
+      </div>
+    </el-dialog>
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item>
@@ -65,7 +83,9 @@
           lengthOfMaturity: [{required: true, message: '请输入内容', trigger: 'blur'}],
           money: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
-        roles: ''
+        dialogFormVisible2: false,
+        accessList: JSON.parse(sessionStorage.getItem('access')),
+        selectAccess: {ids: [], id: null}
       }
     },
     methods: {
@@ -78,10 +98,11 @@
         this.dialogFormVisible = true
       },
       handleAccess(row) {
-        this.$ajax.post('/ztShowPermissions.action', {id: row.id})
+        this.$ajax.post('/listRolePermissions.action', {roleId: row.id})
           .then((res) => {
             if (res.data.code === 1) {
-
+              this.selectAccess = {ids: res.data.data, id: row.id}
+              this.dialogFormVisible2 = true
             }
           })
       },
@@ -100,6 +121,16 @@
             return false;
           }
         });
+      },
+      submit2() {
+        this.$ajax.post('/updateOneRolePermission.action', {
+          id: this.selectAccess.id, ids: this.selectAccess.ids.join(','),
+        }).then((res) => {
+          if (res.data.code === 1) {
+            this.dialogFormVisible2 = false
+            this.$message.success(res.data.msg)
+          }
+        })
       },
       fetch(page) {
         this.loading = true

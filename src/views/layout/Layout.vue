@@ -84,10 +84,20 @@
       };
     },
     mounted() {
-      //this.menuData = generator(JSON.parse(window.sessionStorage.getItem('menu')))
-      this.getTimes();
+      this.getTimes()
+      this.getAllAccess()
     },
     methods: {
+      getAllAccess() {
+        if (!sessionStorage.getItem('access')) {
+          this.$ajax.post('/listAllPermissions.action')
+            .then((res) => {
+              if (res.data.code === 1) {
+                sessionStorage.setItem('access', JSON.stringify(res.data.data))
+              }
+            })
+        }
+      },
       lang(key) {
         this.$i18n.locale = key
       },
@@ -98,7 +108,7 @@
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-            window.sessionStorage.clear()
+            sessionStorage.clear()
             this.$router.push({path: "/login"})
           }).catch(() => {
             this.$message.info('已取消')
