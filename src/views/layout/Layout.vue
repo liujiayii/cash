@@ -1,4 +1,5 @@
 <template>
+  <div class="layuis">
   <el-container>
     <el-header>
       <div class="logo">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>LOGO</b></div>
@@ -25,32 +26,33 @@
       </div>
     </el-header>
     <el-container>
-      <el-aside width="auto">
-        <el-menu class="el-menu-vertical-demo" :default-active="$route.path"
+      <el-aside width="150px" class="nav-box" style="background-color:rgb(45,44,42)">
+        <el-menu  class="el-menu-vertical-demo" :default-active="$route.path"
+                  style="width:150px;overflow: hidden;"
                  :default-openeds="[$route.path.split('/')[1]]" router
                  unique-opened
-                 background-color="#545c64" text-color="#fff"
-                 active-text-color="#ffd04b">
-          <template v-for="item of menuData">
-            <el-submenu :index="item.name" v-if="item.name" :key="item.name">
-              <template slot="title">
+                 background-color="rgb(45,44,42)" text-color="#f1f1f1"
+                 active-text-color="rgb(233,193,142)">
+          <template v-for="item of menuData"  >
+            <el-submenu :index="item.name" v-if="item.name" :key="item.name" >
+              <template slot="title" >
                 <i :class="item.icon"></i>
                 <span>{{$t(`routerName.${item.name}`) }}</span>
               </template>
               <template v-for="item_c of item.children">
-                <el-menu-item :index="`/${item.name}/${item_c.name}`" :key="item_c.name">
+                <el-menu-item :index="`/${item.name}/${item_c.name}`" :key="item_c.name" >
                   {{$t(`routerName.${item_c.name}`) }}
                 </el-menu-item>
               </template>
             </el-submenu>
-            <el-menu-item v-else :index="`/${item.children[0].name}`" :key="item.children[0].name">
+            <el-menu-item v-else :index="`/${item.children[0].name}`" :key="item.children[0].name" >
               <i :class="item.icon"></i>
               <span slot="title">{{$t(`routerName.${item.children[0].name}`) }}</span>
             </el-menu-item>
           </template>
         </el-menu>
       </el-aside>
-      <el-container :style="{background:'#f0f0f0'}">
+      <el-container :style="{background:'rgb(247,243,235)'}">
         <el-breadcrumb :style="{padding:'20px'}" separator="/">
           <el-breadcrumb-item>{{ $t(`routerName.Home`) }}</el-breadcrumb-item>
           <template v-if="$route.path.split('/').length>2">
@@ -64,10 +66,11 @@
             <router-view/>
           </transition>
         </el-main>
-        <el-footer>Copyright © 2019 由 石家庄智莱云信息技术有限公司 强力驱动</el-footer>
+        <el-footer :style="{background:'rgb(247,243,235)'}">Copyright © 2019 由 石家庄智莱云信息技术有限公司 强力驱动</el-footer>
       </el-container>
     </el-container>
   </el-container>
+  </div>
 </template>
 
 <script>
@@ -131,11 +134,24 @@
     }
   };
 </script>
-
+<style>
+  .el-submenu__title:focus, .el-submenu__title:hover {
+    outline: 0 !important;
+    color: rgb(233,193,142)!important;
+    background: #54524d!important;
+  }
+  .el-menu-item:hover{
+    outline: 0 !important;
+    color:rgb(233,193,142)!important;
+    background: #54524d!important;
+  }
+  .el-dropdown{color:#f1f1f1}
+</style>
 <style lang="scss" scoped>
+
   .el-header, .el-footer {
-    background-color: #fff;
-    color: #666;
+    background-color:rgb(45,44,42);
+    color: #f1f1f1;
     line-height: 60px;
   }
 
@@ -158,7 +174,7 @@
       }
 
       &:hover {
-        background: #ddd;
+        background: #4e4940;
       }
     }
 

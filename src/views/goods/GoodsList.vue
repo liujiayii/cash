@@ -3,16 +3,16 @@
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small" >
         <el-form-item  label="商品名称"  style="display: inline-block;margin-left:10px">
-        <el-input placeholder="商品名称" type="number" v-model="searchForm.phone"></el-input>
+        <el-input placeholder="商品名称"   clearable v-model="searchForm.phone"   @blur="seachs()"></el-input>
        </el-form-item>
           <el-form-item label="店铺"  style="display: inline-block;margin-left:10px">
-            <el-select v-model="searchForm.shop" placeholder="请选择店铺">
-              <el-option v-for="item in productTypeId" :key="item.value" :label="item.label"
+            <el-select v-model="searchForm.shop" placeholder="请选择店铺"  clearable  @change="seachs()">
+              <el-option v-for="item in shopId" :key="item.value" :label="item.label"
                          :value="item.value"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="商品种类"  style="display: inline-block;margin-left:10px">
-            <el-select v-model="searchForm.productTypeId" placeholder="请选择商品种类">
+          <el-form-item label="商品种类"  style="display: inline-block;margin-left:10px" >
+            <el-select v-model="searchForm.productTypeId" placeholder="请选择商品种类" @change="seachs()"  clearable>
               <el-option v-for="item in productTypeId" :key="item.value" :label="item.label"
                          :value="item.value"></el-option>
             </el-select>
@@ -87,7 +87,7 @@
               label="商品种类"
               width="160">
       </el-table-column>
-      <el-table-column label="操作"  fixed="right"   width="180">
+      <el-table-column label="操作"  fixed="right"   width="250">
         <template slot-scope="scope">
           <el-button
                   size="mini"
@@ -96,16 +96,19 @@
                   size="mini"
                   type="danger"
                   @click="handleDelete(scope.row)">删除</el-button>
+          <el-button
+                  size="mini"
+                  @click="handlePrint(scope.$index, scope.row)">打印条码</el-button>
         </template>
       </el-table-column>
     </el-table>
     <el-pagination
-            @current-change="getList"
+            @current-change="seachs"
             :current-page="pagination.current"
             layout="total, prev, pager, next, jumper"
             :total="pagination.total">
     </el-pagination>
-    <el-dialog title="收货地址" :visible.sync="dialogFormVisible" :modal-append-to-body="modalAppend">
+    <el-dialog title="添加商品" :visible.sync="dialogFormVisible" :modal-append-to-body="modalAppend" @closed="form={}">
       <el-form :model="form" class="demo-ruleForm flex">
         <el-form-item label="商品名称" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品名称不能为空'}] "
                       class="formlist">
@@ -160,17 +163,22 @@
         <el-form-item label="商品图片" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品图片不能为空'}] "
                       class="formlistbig">
           <el-upload
-                  action="http://192.168.1.135:8080/CashierOu/upload.action"
+                  action="http://192.168.1.184:8080/upload.action"
                   list-type="picture-card"
-                  :limit="limit"
                   :on-success="handlesuccess"
                   :on-preview="handlePictureCardPreview"
-                  :on-remove="handleRemove">
+                  :on-remove="handleRemove"
+                  :limit="limit"
+                 >
             <i class="el-icon-plus"></i>
           </el-upload>
           <el-dialog :visible.sync="dialogVisible">
             <img width="100%" :src="dialogImageUrl" alt="">
           </el-dialog>
+<!--          <p>-->
+<!--            <img :src="form.image" alt="">-->
+<!--            替换前图片-->
+<!--          </p>-->
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -186,11 +194,12 @@
     name: "GoodsList",
     data() {
       return {
-        searchForm: {},
+        searchForm: { phone:"", shop:"",  productTypeId:"" },
         loading: false,
         pagination: {},
         tableData: [],
         limit: 1,
+        shopId:[],
         productTypeId: [],
         dialogImageUrl: '',
         dialogVisible: false,
@@ -213,24 +222,66 @@
       }
     },
     methods: {
-      getList(num){
-        this.loading = true
+      //打印
+      handlePrint(){
+
+      },
+      //模糊查询
+      seachs(num){
         this.$ajax.post("getProductByCondition.action", {
-          page:1||num,
-          limit:10
+           productName:this.searchForm.phone?this.searchForm.phone:"",
+           shopId:this.searchForm.shop?this.searchForm.shop:"",
+           productTypeId:this.searchForm.productTypeId?this.searchForm.productTypeId:"",
+           page:num || 1,
+           limit:10
           }
         ).then(res => {
-          if (res.data.code === 1) {
+          if (res.data.code === 1&&res.data.count!=0) {
             const pagination = {...this.pagination};
             pagination.total = res.data.count
             pagination.current = num;
             this.loading = false;
             this.tableData=res.data.listProduct
             this.pagination = pagination;
-          }
+          }else{
+            this.pagination.total = 0
+            this.pagination.current = 1;
+            this.tableData=[]}
 
         })
       },
+      //得到所有店铺
+      getShopLists() {
+    this.$ajax.post("listShopIdAndName.action", {
+
+      }
+    ).then(res => {
+      for (let i = 0; i < res.data.data.length; i++) {
+        let jsonsa = {}
+        jsonsa.value = res.data.data[i].id
+        jsonsa.label = res.data.data[i].name
+        this.shopId.push(jsonsa)
+      }
+    })
+  },
+      // getList(num){
+      //   this.loading = true
+      //   this.$ajax.post("getProductByCondition.action", {
+      //     page:1||num,
+      //     limit:10
+      //     }
+      //   ).then(res => {
+      //     if (res.data.code === 1) {
+      //       const pagination = {...this.pagination};
+      //       pagination.total = res.data.count
+      //       pagination.current = num;
+      //       this.loading = false;
+      //       this.tableData=res.data.listProduct
+      //       this.pagination = pagination;
+      //     }
+      //
+      //   })
+      // },
       //商品分类
       getClassList() {
         this.$ajax.post("listProductType.action", {}
@@ -272,17 +323,24 @@
       },
       //图片上传
       handlesuccess(file, fileList) {
-        this.form.image = file.data
+       this.form.image = file.data
       },
       handleRemove(file, fileList) {
         console.log(file, fileList);
       },
       handlePictureCardPreview(file) {
-        this.dialogImageUrl = file.url;
-        this.dialogVisible = true;
+      this.dialogImageUrl = file.url;
+      this.dialogVisible = true;
       },
+      //修改
       handleEdit(index, row) {
         console.log(index, row);
+        this.$ajax.post("getProduct.action", {productId:row.id}
+        ).then(res => {
+          this.dialogFormVisible = true
+          this.form=res.data.product
+          this.form.image=res.data.product.image
+        })
       },
       handleDelete(row) {
         this.$confirm('是否删除?', '提示', {
@@ -294,7 +352,7 @@
             .then((res) => {
               if (res.data.code === 1) {
                 this.$message.success(res.data.msg);
-                this.getList(this.pagination.current)
+                this.seachs(this.pagination.current)
               }
             })
         }).catch(() => {
@@ -303,8 +361,9 @@
       }
     },
     mounted() {
-      this.getList(1)
-      this.getClassList()
+      this.seachs(1)
+       this.getClassList()
+      this.getShopLists()
     }
 
 

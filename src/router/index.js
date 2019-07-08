@@ -29,7 +29,14 @@ const generator = (routerMap, parent) => {
 }
 const menuData = [
   {
-    icon: "el-icon-menu",
+    icon: "el-icon-s-home",
+    name: "",
+    children: [
+      {name: "Home"}
+    ]
+  },
+  {
+    icon: "el-icon-s-custom",
     name: "System",
     children: [
       {name: "Mall"},
@@ -39,7 +46,7 @@ const menuData = [
     ]
   },
   {
-    icon: "el-icon-menu",
+    icon: "el-icon-shopping-bag-1",
     name: "Goods",
     children: [
       {name: "GoodsList"},
@@ -57,14 +64,14 @@ const menuData = [
     ]
   },
   {
-    icon: "el-icon-menu",
+    icon: "el-icon-coin",
     name: "Discount",
     children: [
       {name: "DiscountList"}
     ]
   },
   {
-    icon: "el-icon-menu",
+    icon: "el-icon-document",
     name: "Record",
     children: [
       {name: "Operation"},
@@ -73,17 +80,10 @@ const menuData = [
     ]
   },
   {
-    icon: "el-icon-menu",
+    icon: "el-icon-edit-outline",
     name: "Finance",
     children: [
       {name: "Order"}
-    ]
-  },
-  {
-    icon: "el-icon-menu",
-    name: "",
-    children: [
-      {name: "Home"}
     ]
   }
 ]
