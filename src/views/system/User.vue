@@ -14,8 +14,8 @@
             <el-option label="女" :value="2"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="区域经理" prop="agent_type">
-          <el-select v-model="formData.agent_type">
+        <el-form-item label="区域经理" prop="agentType">
+          <el-select v-model="formData.agentType">
             <el-option label="不是经理" :value="0"></el-option>
             <el-option label="省级" :value="1"></el-option>
             <el-option label="市级" :value="2"></el-option>
@@ -44,7 +44,7 @@
           <el-input type="text" v-model="formData.password" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="状态" prop="state">
-          <el-select v-model="formData.sex">
+          <el-select v-model="formData.state">
             <el-option label="锁定" :value="1"></el-option>
             <el-option label="解锁" :value="2"></el-option>
           </el-select>
@@ -118,13 +118,14 @@
         this.fetch()
       },
       handleEdit(row) {
+        delete row.password
         this.formData = JSON.parse(JSON.stringify(row))
         this.dialogFormVisible = true
       },
       submit(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.formData.birthday = this.formatDate(new Date(this.formData.birthday), 'yyyy/MM/dd')
+            this.formData.birthday = this.formatDate(new Date(this.formData.birthday), 'yyyy-MM-dd hh:mm:ss')
             delete this.formData.entryTime
             this.$ajax.post(this.formData.id ? '/updateUser.action' : '/saveUser.action', this.formData)
               .then((res) => {

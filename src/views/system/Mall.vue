@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body>
+    <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body fullscreen>
       <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
         <el-form-item label="店铺名称" prop="name">
           <el-input type="text" v-model="formData.name" autocomplete="off"></el-input>
@@ -29,7 +29,7 @@
         <el-form-item label="开业时间" prop="createTime">
           <el-date-picker v-model="formData.createTime" type="date" placeholder="选择日期"></el-date-picker>
         </el-form-item>
-        <el-form-item label="店铺状态：" prop="state">
+        <el-form-item label="店铺状态" prop="state">
           <el-select v-model="formData.state">
             <el-option label="营业中" :value="1"></el-option>
             <el-option label="未营业" :value="2"></el-option>
@@ -38,7 +38,49 @@
         <el-form-item label="备注" prop="remarks">
           <el-input type="text" v-model="formData.remarks" autocomplete="off"></el-input>
         </el-form-item>
+        <el-form-item label="用户账号" prop="username">
+          <el-input type="text" v-model="formData.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="用户密码" prop="password">
+          <el-input type="text" v-model="formData.password" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="用户姓名" prop="uname">
+          <el-input type="text" v-model="formData.uname" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="用户联系电话" prop="uphone">
+          <el-input type="text" v-model="formData.uphone" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="用户性别" prop="sex">
+          <el-select v-model="formData.sex">
+            <el-option label="男" :value="1"></el-option>
+            <el-option label="女" :value="2"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="用户年龄" prop="age">
+          <el-input type="text" v-model="formData.age" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="用户入职日期" prop="entryTime">
+          <el-date-picker v-model="formData.entryTime" type="date" placeholder="选择日期"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="用户生日" prop="birthday">
+          <el-date-picker v-model="formData.birthday" type="date" placeholder="选择日期"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="用户备注" prop="uremarks">
+          <el-input type="text" v-model="formData.uremarks" autocomplete="off"></el-input>
+        </el-form-item>
       </el-form>
+      <div v-for="item of accessList" :key="item.parentIds">
+        <el-divider content-position="left">
+          <el-checkbox-group v-model="selectAccess.ids">
+            <el-checkbox :label="item.parentIds">{{item.parent_names}}</el-checkbox>
+          </el-checkbox-group>
+        </el-divider>
+        <el-checkbox-group v-model="selectAccess.ids">
+          <el-checkbox v-for="item_c of item.permissions" :key="item_c.id" :label="item_c.id">
+            {{item_c.name}}
+          </el-checkbox>
+        </el-checkbox-group>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="submit('ruleForm')">确 定</el-button>
@@ -108,6 +150,8 @@
           sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
           name: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
+        accessList: JSON.parse(sessionStorage.getItem('access')),
+        selectAccess: {ids: [], id: null}
       }
     },
     methods: {
@@ -116,21 +160,37 @@
         this.fetch()
       },
       handleEdit(row) {
+        this.$ajax.post('/showUpdateShop.action', {id: row.id})
+          .then((res) => {
+            if (res.data.code === 1) {
+              let cacheArr = []
+              for (let i = 0; i < res.data.PermissionVolist.length; i++) {
+                cacheArr.push(res.data.PermissionVolist[i].id)
+                console.log(res.data.PermissionVolist[i].id)
+              }
+              console.log(cacheArr)
+              this.selectAccess = {ids: cacheArr, id: row.id}
+            }
+          })
         this.formData = JSON.parse(JSON.stringify(row))
         this.dialogFormVisible = true
       },
       submit(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.formData.createTime = this.formatDate(this.formData.createTime, 'yyyy-MM-dd')
-            this.$ajax.post(this.formData.id ? '/showUpdateShop.action' : '/insertShop.action', this.formData)
-              .then((res) => {
-                if (res.data.code === 1) {
-                  this.dialogFormVisible = false
-                  this.$message.success(res.data.msg);
-                  this.fetch(this.pagination.current)
-                }
-              })
+            this.$ajax.post(this.formData.id ? '/showUpdateShop.action' : '/insertShop.action', {
+              ...this.formData,
+              createTime: this.formData.createTime.getTime(),
+              entryTime: this.formData.entryTime.getTime(),
+              birthday: this.formData.birthday.getTime(),
+              ids: this.selectAccess.ids.join(',')
+            }).then((res) => {
+              if (res.data.code === 1) {
+                this.dialogFormVisible = false
+                this.$message.success(res.data.msg);
+                this.fetch(this.pagination.current)
+              }
+            })
             return false;
           }
         });
