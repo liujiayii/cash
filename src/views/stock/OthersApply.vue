@@ -54,7 +54,6 @@
           <el-button type="primary" @click="reset()">重置</el-button>
         </el-form-item>
       </el-form>
-      <el-button type="primary" size="small" round @click="dialogFormVisible=true">新建</el-button>
     </div>
     <el-table :data="tableData" style="width: 100%" v-loading="loading">
       <el-table-column prop="id" label="物流表ID"></el-table-column>

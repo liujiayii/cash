@@ -2,30 +2,18 @@
   <div>
     <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body fullscreen>
       <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
-        <el-form-item label="送货日期">
-          <el-input type="text" v-model="formData.deliveryDate" autocomplete="off"></el-input>
-        </el-form-item>
         <el-form-item label="货流类型" prop="goodstrafficState">
           <el-select v-model="formData.goodstrafficState">
             <el-option label="采购" :value="1"></el-option>
             <el-option label="调拨" :value="2"></el-option>
           </el-select>
         </el-form-item>
+        <el-form-item label="送货日期">
+          <el-date-picker v-model="formData.deliveryDate" type="date" placeholder="选择日期"></el-date-picker>
+        </el-form-item>
         <template v-if="formData.goodstrafficState===2">
-          <el-form-item label="发起调拨店铺ID">
-            <el-input type="text" v-model="formData.shipmentsShopId" autocomplete="off"></el-input>
-          </el-form-item>
           <el-form-item label="送货店铺ID">
             <el-input type="text" v-model="formData.receivingShopId" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="运输状态">
-            <el-select v-model="formData.transportationState">
-              <el-option label="未审批" :value="1"></el-option>
-              <el-option label="备货中" :value="2"></el-option>
-              <el-option label="已入库" :value="3"></el-option>
-              <el-option label="已拒绝" :value="4"></el-option>
-              <el-option label="已入库" :value="5"></el-option>
-            </el-select>
           </el-form-item>
         </template>
         <el-form-item label="备注">
@@ -118,10 +106,18 @@
       submit(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
+            let cacheArr = []
+            for (let i in this.goodsCount) {
+              cacheArr.push({
+                productId: i,
+                quantity: this.goodsCount[i]
+              })
+            }
             this.$ajax.post(this.formData.id ? '' : '/addprocurement.action', {
-              id: this.formData.id,
-              inventoryWarning: this.formData.inventoryWarning,
-              quantity: this.formData.quantity
+              ...this.formData,
+              deliveryDate: this.formatDate(this.formData.deliveryDate, 'yyyy-MM-dd hh:mm:ss'),
+              time: this.formatDate(this.formData.deliveryDate, 'yyyy-MM-dd hh:mm:ss'),
+              g: JSON.stringify(cacheArr)
             }).then((res) => {
               if (res.data.code === 1) {
                 this.dialogFormVisible = false

@@ -11,14 +11,8 @@
             <el-option label="分店" :value="2"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="省id" prop="provid">
-          <el-input type="text" v-model="formData.provid" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="市id" prop="cityid">
-          <el-input type="text" v-model="formData.cityid" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="区id" prop="areaid">
-          <el-input type="text" v-model="formData.areaid" autocomplete="off"></el-input>
+        <el-form-item label="地区" prop="provid">
+          <el-cascader v-model="formData.area" :options="area"></el-cascader>
         </el-form-item>
         <el-form-item label="详细地址" prop="addr">
           <el-input type="text" v-model="formData.addr" autocomplete="off"></el-input>
@@ -27,7 +21,8 @@
           <el-input type="text" v-model="formData.phone" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="开业时间" prop="createTime">
-          <el-date-picker v-model="formData.createTime" type="date" placeholder="选择日期"></el-date-picker>
+          <el-date-picker v-model="formData.createTime" value-format="timestamp" type="date"
+                          placeholder="选择日期"></el-date-picker>
         </el-form-item>
         <el-form-item label="店铺状态" prop="state">
           <el-select v-model="formData.state">
@@ -60,10 +55,12 @@
           <el-input type="text" v-model="formData.age" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="用户入职日期" prop="entryTime">
-          <el-date-picker v-model="formData.entryTime" type="date" placeholder="选择日期"></el-date-picker>
+          <el-date-picker v-model="formData.entryTime" value-format="timestamp" type="date"
+                          placeholder="选择日期"></el-date-picker>
         </el-form-item>
         <el-form-item label="用户生日" prop="birthday">
-          <el-date-picker v-model="formData.birthday" type="date" placeholder="选择日期"></el-date-picker>
+          <el-date-picker v-model="formData.birthday" value-format="timestamp" type="date"
+                          placeholder="选择日期"></el-date-picker>
         </el-form-item>
         <el-form-item label="用户备注" prop="uremarks">
           <el-input type="text" v-model="formData.uremarks" autocomplete="off"></el-input>
@@ -131,7 +128,7 @@
 </template>
 
 <script>
-  import {mixin} from "../../config/utils";
+  import {mixin, area} from "../../config/utils";
 
   export default {
     name: "Mall",
@@ -139,6 +136,7 @@
     data() {
       return {
         tableData: [],
+        area,
         pagination: {},
         loading: false,
         searchForm: {},
@@ -160,29 +158,43 @@
         this.fetch()
       },
       handleEdit(row) {
-        this.$ajax.post('/showUpdateShop.action', {id: row.id})
+        this.$ajax.post('/showUpdateShop.action', {shopId: row.id})
           .then((res) => {
             if (res.data.code === 1) {
               let cacheArr = []
               for (let i = 0; i < res.data.PermissionVolist.length; i++) {
                 cacheArr.push(res.data.PermissionVolist[i].id)
-                console.log(res.data.PermissionVolist[i].id)
               }
-              console.log(cacheArr)
               this.selectAccess = {ids: cacheArr, id: row.id}
+              this.formData = JSON.parse(JSON.stringify(
+                {
+                  ...row,
+                  area: [row.provid + '', row.cityid + '', row.areaid + ''],
+                  username: res.data.userVo2.username,
+                  uname: res.data.userVo2.name,
+                  uphone: res.data.userVo2.phone,
+                  sex: res.data.userVo2.sex,
+                  age: res.data.userVo2.age,
+                  entryTime: res.data.userVo2.entryTime,
+                  birthday: res.data.userVo2.birthday,
+                  uremarks: res.data.userVo2.remarks,
+                }))
+              this.dialogFormVisible = true
             }
           })
-        this.formData = JSON.parse(JSON.stringify(row))
-        this.dialogFormVisible = true
+
       },
       submit(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.$ajax.post(this.formData.id ? '/showUpdateShop.action' : '/insertShop.action', {
+            this.$ajax.post(this.formData.id ? '/updateShop.action' : '/insertShop.action', {
               ...this.formData,
-              createTime: this.formData.createTime.getTime(),
-              entryTime: this.formData.entryTime.getTime(),
-              birthday: this.formData.birthday.getTime(),
+              createTime: this.formatDate(new Date(this.formData.createTime), 'yyyy-MM-dd hh:mm:ss.S'),
+              entryTime: this.formatDate(new Date(this.formData.entryTime), 'yyyy-MM-dd hh:mm:ss.S'),
+              birthday: this.formatDate(new Date(this.formData.birthday), 'yyyy-MM-dd hh:mm:ss.S'),
+              provid: this.formData.area[0],
+              cityid: this.formData.area[1],
+              areaid: this.formData.area[2],
               ids: this.selectAccess.ids.join(',')
             }).then((res) => {
               if (res.data.code === 1) {

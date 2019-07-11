@@ -15,7 +15,8 @@
           </el-select>
         </el-form-item>
         <el-form-item label="生日" prop="birthday">
-          <el-date-picker v-model="formData.birthday" type="date" placeholder="选择生日"></el-date-picker>
+          <el-date-picker v-model="formData.birthday" value-format="timestamp" type="date"
+                          placeholder="选择生日"></el-date-picker>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -97,24 +98,24 @@
       },
       submit(formName) {
         this.$refs[formName].validate((valid) => {
-          if (valid) {
-            this.$ajax.post(this.formData.id ? '/updateMember.action' : '/saveMember.action', {
-              id: this.formData.id || '',
-              phone: this.formData.phone,
-              name: this.formData.name,
-              sex: this.formData.sex,
-              birthday: this.formatDate(this.formData.birthday, 'yyyy/MM/dd')
-            })
-              .then((res) => {
+            if (valid) {
+              this.$ajax.post(this.formData.id ? '/updateMember.action' : '/saveMember.action', {
+                id: this.formData.id || '',
+                phone: this.formData.phone,
+                name: this.formData.name,
+                sex: this.formData.sex,
+                birthday: this.formatDate(new Date(this.formData.birthday), 'yyyy/MM/dd')
+              }).then((res) => {
                 if (res.data.code === 1) {
                   this.dialogFormVisible = false
                   this.$message.success(res.data.msg);
                   this.fetch(this.pagination.current)
                 }
               })
-            return false;
+              return false;
+            }
           }
-        });
+        );
       },
       fetch(page) {
         this.loading = true
@@ -129,7 +130,8 @@
               this.pagination = pagination;
             }
           })
-      },
+      }
+      ,
       stateChange(row, state) {
         this.$ajax.post('/updateMemberState.action', {id: row.id, state})
           .then((res) => {
@@ -137,7 +139,8 @@
               this.$message.success(res.data.msg);
             }
           })
-      },
+      }
+      ,
       handleDelete(row) {
         this.$confirm('是否删除?', '提示', {
           confirmButtonText: '确定',

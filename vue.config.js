@@ -5,7 +5,8 @@ let externals = {
   'vue-i18n': 'VueI18n',
   'nprogress': 'NProgress',
   'screenfull': 'screenfull',
-  'element-ui': 'ELEMENT'
+  'element-ui': 'ELEMENT',
+  '@antv/g2': 'G2'
 }
 const cdn = {
   css: [],
@@ -16,7 +17,8 @@ const cdn = {
     'https://cdn.jsdelivr.net/npm/element-ui@2/lib/index.min.js',
     'https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js',
     'https://cdn.jsdelivr.net/npm/vue-i18n@8/dist/vue-i18n.min.js',
-    'https://cdn.jsdelivr.net/npm/screenfull@4/dist/screenfull.min.js'
+    'https://cdn.jsdelivr.net/npm/screenfull@4/dist/screenfull.min.js',
+    'https://cdn.jsdelivr.net/npm/@antv/g2@3/dist/g2.min.js'
   ]
 }
 
@@ -44,9 +46,9 @@ module.exports = {
     if (process.env.NODE_ENV === 'production') {
       config.externals(externals)//忽略打包
       config.plugin('html').tap(args => {
-          args[0].cdn = cdn;
-          return args
-        })
+        args[0].cdn = cdn;
+        return args
+      })
     }
   }
 }

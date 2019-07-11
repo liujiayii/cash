@@ -23,7 +23,9 @@
           </el-select>
         </el-form-item>
         <el-form-item label="角色" prop="roleId">
-          <el-input type="text" v-model="formData.roleId" autocomplete="off"></el-input>
+          <el-select v-model="formData.roleId">
+            <el-option v-for="item of roles" :label="item.name" :value="item.id" :key="item.id"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="区域ID" prop="areaId">
           <el-input type="text" v-model="formData.areaId" autocomplete="off"></el-input>
@@ -110,6 +112,7 @@
           sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
           name: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
+        roles: []
       }
     },
     methods: {
@@ -177,10 +180,19 @@
         }).catch(() => {
           this.$message.info('已取消');
         });
+      },
+      getRole() {
+        this.$ajax.post('/listRole.action', {page: 1, limit: 20})
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.roles = res.data.data
+            }
+          })
       }
     },
     mounted() {
       this.fetch()
+      this.getRole()
     }
   }
 </script>
