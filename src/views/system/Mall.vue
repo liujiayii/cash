@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body fullscreen>
+    <el-dialog :visible.sync="dialogFormVisible" @closed="closeForm" append-to-body fullscreen>
       <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
         <el-form-item label="店铺名称" prop="name">
           <el-input type="text" v-model="formData.name" autocomplete="off"></el-input>
@@ -156,6 +156,10 @@
       reset() {
         this.searchForm = {}
         this.fetch()
+      },
+      closeForm() {
+        this.formData = {}
+        this.selectAccess.ids = []
       },
       handleEdit(row) {
         this.$ajax.post('/showUpdateShop.action', {shopId: row.id})

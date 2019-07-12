@@ -23,7 +23,11 @@
     <el-table :data="tableData" style="width: 100%" v-loading="loading">
       <el-table-column prop="number" label="订单号"></el-table-column>
       <el-table-column prop="shopName" label="店铺名称"></el-table-column>
-      <el-table-column prop="createTime" label="订单创建时间"></el-table-column>
+      <el-table-column prop="createTime" label="订单创建时间">
+        <template slot-scope="scope">
+          <span>{{formatDate(new Date(scope.row.createTime),'yyyy-MM-dd')}}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="payMethod" label="交易方式">
         <template slot-scope="scope">
           <span>{{scope.row.payMethod===1?'现金':scope.row.payMethod===2?'POS机':scope.row.payMethod===3?'支付宝':scope.row.payMethod===4?'微信支付':''}}</span>
@@ -40,7 +44,7 @@
       <el-table-column prop="remark" label="备注"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
+          <el-button type="text" size="small" @click="handleEdit(scope.row)">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -54,8 +58,11 @@
 </template>
 
 <script>
+  import {mixin} from "../../config/utils"
+
   export default {
     name: "Order",
+    mixins: [mixin],
     data() {
       return {
         tableData: [],

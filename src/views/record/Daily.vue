@@ -17,6 +17,7 @@
         <el-button type="primary" @click="getMoney">查询</el-button>
       </el-form-item>
     </el-form>
+    <div>{{money}}</div>
     <el-card style="height: 500px;width: 30%" shadow="hover" header="当日销售商品销量占比图">
       <div id="c1"></div>
     </el-card>
@@ -31,7 +32,8 @@
     data() {
       return {
         searchForm: {},
-        topList: []
+        topList: [],
+        money: []
       }
     },
     methods: {
@@ -88,7 +90,7 @@
         this.$ajax.post('/getOrderAndSumOrderMoney.action', {...this.searchForm})
           .then((res) => {
             if (res.data.code === 1) {
-
+              this.money = res.data.data
             }
           })
       }

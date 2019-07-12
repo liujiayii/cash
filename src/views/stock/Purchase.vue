@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body fullscreen>
+    <el-dialog :visible.sync="dialogFormVisible" @closed="closeForm" append-to-body fullscreen>
       <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
         <el-form-item label="货流类型" prop="goodstrafficState">
           <el-select v-model="formData.goodstrafficState">
@@ -31,6 +31,19 @@
         <el-button type="primary" @click="submit('ruleForm')">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog :visible.sync="dialogFormVisible2" append-to-body>
+      <el-table :data="tableData2" style="width: 100%">
+        <el-table-column prop="id" label="货流商品表id"></el-table-column>
+        <el-table-column prop="quantity" label="数量"></el-table-column>
+        <el-table-column prop="money" label="金额"></el-table-column>
+        <el-table-column prop="productName" label="商品名称"></el-table-column>
+        <el-table-column prop="productTypeName" label="商品分类名称"></el-table-column>
+      </el-table>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible2 = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible2 = false">确 定</el-button>
+      </div>
+    </el-dialog>
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item>
@@ -53,7 +66,7 @@
       <el-table-column prop="remark" label="备注"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
+          <el-button type="text" size="small" @click="handleEdit(scope.row)">查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -87,10 +100,16 @@
           name: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
         goodsList: [],
-        goodsCount: {}
+        goodsCount: {},
+        dialogFormVisible2: false,
+        tableData2: []
       }
     },
     methods: {
+      closeForm() {
+        this.formData = {}
+        this.goodsCount = {}
+      },
       selectTime(e) {
         this.searchForm.startdate = this.formatDate(e[0], 'yyyy-MM-dd')
         this.searchForm.enddate = this.formatDate(e[1], 'yyyy-MM-dd')
@@ -100,8 +119,13 @@
         this.fetch()
       },
       handleEdit(row) {
-        this.formData = JSON.parse(JSON.stringify(row))
-        this.dialogFormVisible = true
+        this.$ajax.post('/listGoodstrafficOrdersProduct.action', {id: row.id})
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.tableData2 = res.data.data
+              this.dialogFormVisible2 = true
+            }
+          })
       },
       submit(formName) {
         this.$refs[formName].validate((valid) => {

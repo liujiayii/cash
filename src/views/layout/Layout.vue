@@ -2,7 +2,7 @@
   <div>
     <el-container>
       <el-header>
-        <div class="logo"><b>LOGO</b></div>
+        <div class="logo"><b>云小讴</b></div>
         <div>
           <div class="point" @click="fullScreen">
             <i class="el-icon-full-screen"></i>
@@ -61,8 +61,8 @@
             </template>
           </el-breadcrumb>
           <el-main :style="{background: '#fff',margin:' 0 20px'}">
-            <transition name="main" mode="out-in" enter-active-class="animated bounceIn"
-                        leave-active-class="animated bounceOut" :duration="200">
+            <transition name="main" mode="out-in" enter-active-class="animated fadeIn"
+                        leave-active-class="animated fadeOut" :duration="200">
               <router-view/>
             </transition>
           </el-main>
