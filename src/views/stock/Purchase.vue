@@ -12,8 +12,10 @@
           <el-date-picker v-model="formData.deliveryDate" type="date" placeholder="选择日期"></el-date-picker>
         </el-form-item>
         <template v-if="formData.goodstrafficState===2">
-          <el-form-item label="送货店铺ID">
-            <el-input type="text" v-model="formData.receivingShopId" autocomplete="off"></el-input>
+          <el-form-item label="送货店铺">
+            <el-select v-model="formData.receivingShopId">
+              <el-option v-for="item of mallList" :label="item.name" :value="item.id"></el-option>
+            </el-select>
           </el-form-item>
         </template>
         <el-form-item label="备注">
@@ -22,7 +24,7 @@
         <div v-for="item of goodsList" :key="item.productTypeId">
           <el-divider content-position="left">{{item.productTypeName}}</el-divider>
           <el-form-item v-for="item_c of item.product" :label="item_c.name" :key="item_c.id">
-            <el-input type="text" v-model="goodsCount[item_c.id]" autocomplete="off"></el-input>
+            <el-input type="number" v-model="goodsCount[item_c.id]" autocomplete="off"></el-input>
           </el-form-item>
         </div>
       </el-form>
@@ -94,7 +96,7 @@
         dialogFormVisible: false,
         formData: {},
         rules: {
-          phone: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          goodstrafficState: [{required: true, message: '请输入内容', trigger: 'blur'}],
           birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
           sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
           name: [{required: true, message: '请输入内容', trigger: 'blur'}]
@@ -102,7 +104,8 @@
         goodsList: [],
         goodsCount: {},
         dialogFormVisible2: false,
-        tableData2: []
+        tableData2: [],
+        mallList: []
       }
     },
     methods: {
@@ -174,11 +177,20 @@
               this.goodsList = res.data.data
             }
           })
+      },
+      getMall() {
+        this.$ajax.post('/listAllShopVo.action', {page: 1, limit: 100})
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.mallList = res.data.data
+            }
+          })
       }
     },
     mounted() {
       this.getAllGoods()
       this.fetch()
+      this.getMall()
     }
   }
 </script>

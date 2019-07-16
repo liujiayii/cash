@@ -21,7 +21,6 @@
         <el-table-column prop="productTypeName" label="商品分类名称"></el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible2 = false">取 消</el-button>
         <el-button type="primary" @click="dialogFormVisible2 = false">确 定</el-button>
       </div>
     </el-dialog>
@@ -35,6 +34,9 @@
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="handleEdit(scope.row)">查看</el-button>
+          <el-button v-if="scope.row.transportation_state===3" type="text" size="small" @click="handleClick(scope.row)">
+            入库
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -80,6 +82,23 @@
               this.dialogFormVisible2 = true
             }
           })
+      },
+      handleClick(row) {
+        this.$confirm('是否入库?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$ajax.post('/updateQuantity.action', {id: row.id, judge: 2})
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.$message.success(res.data.msg);
+                this.fetch(this.pagination.current)
+              }
+            })
+        }).catch(() => {
+          this.$message.info('已取消');
+        });
       },
       fetch(page) {
         this.loading = true

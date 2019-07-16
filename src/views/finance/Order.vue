@@ -34,7 +34,6 @@
         </template>
       </el-table-column>
       <el-table-column prop="payAdvance" label="订单应收金额"></el-table-column>
-      <el-table-column prop="customDiscount" label="手动输入折扣"></el-table-column>
       <el-table-column prop="totalMoney" label="实付总金额"></el-table-column>
       <el-table-column prop="state" label="状态">
         <template slot-scope="scope">

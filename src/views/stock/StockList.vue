@@ -27,13 +27,12 @@
           <el-button type="primary" @click="reset()">重置</el-button>
         </el-form-item>
       </el-form>
-      <el-button type="primary" size="small" round @click="dialogFormVisible=true">新建</el-button>
     </div>
     <el-table :data="tableData" style="width: 100%" v-loading="loading">
       <el-table-column prop="id" label="编号"></el-table-column>
       <el-table-column prop="productName" label="商品名称"></el-table-column>
       <el-table-column prop="quantity" label="数量"></el-table-column>
-      <el-table-column prop="inventory_warning" label="库存预警"></el-table-column>
+      <el-table-column prop="inventoryWarning" label="库存预警"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
@@ -61,10 +60,8 @@
         dialogFormVisible: false,
         formData: {},
         rules: {
-          phone: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          name: [{required: true, message: '请输入内容', trigger: 'blur'}]
+          inventoryWarning: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          quantity: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
       }
     },

@@ -27,17 +27,22 @@
             <el-option v-for="item of roles" :label="item.name" :value="item.id" :key="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="区域ID" prop="areaId">
-          <el-input type="text" v-model="formData.areaId" autocomplete="off"></el-input>
+        <el-form-item label="区域" prop="areaId">
+          <el-cascader v-model="formData.area" :options="area"></el-cascader>
         </el-form-item>
-        <el-form-item label="店铺ID" prop="shopId">
-          <el-input type="text" v-model="formData.shopId" autocomplete="off"></el-input>
+        <el-form-item label="店铺" prop="shopId">
+          <el-select v-model="formData.shopId">
+            <el-option v-for="item of mallList" :label="item.name" :value="item.id"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="生日" prop="birthday">
           <el-date-picker v-model="formData.birthday" placeholder="选择生日"></el-date-picker>
         </el-form-item>
         <el-form-item label="年龄" prop="age">
           <el-input type="text" v-model="formData.age" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="入职日期" prop="entryTime">
+          <el-date-picker v-model="formData.entryTime" placeholder="选择日期"></el-date-picker>
         </el-form-item>
         <el-form-item label="用户名" prop="username">
           <el-input type="text" v-model="formData.username" autocomplete="off"></el-input>
@@ -93,7 +98,7 @@
 </template>
 
 <script>
-  import {mixin} from "../../config/utils";
+  import {mixin, area} from "../../config/utils";
 
   export default {
     name: "User",
@@ -103,6 +108,7 @@
         tableData: [],
         pagination: {},
         loading: false,
+        area,
         searchForm: {},
         dialogFormVisible: false,
         formData: {},
@@ -110,9 +116,18 @@
           phone: [{required: true, message: '请输入内容', trigger: 'blur'}],
           birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
           sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          name: [{required: true, message: '请输入内容', trigger: 'blur'}]
+          name: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          agentType: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          roleId: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          shopId: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          age: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          entryTime: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          username: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          state: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          remarks: [{required: true, message: '请输入内容', trigger: 'blur'}],
         },
-        roles: []
+        roles: [],
+        mallList: []
       }
     },
     methods: {
@@ -128,16 +143,18 @@
       submit(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.formData.birthday = this.formatDate(new Date(this.formData.birthday), 'yyyy-MM-dd hh:mm:ss')
-            delete this.formData.entryTime
-            this.$ajax.post(this.formData.id ? '/updateUser.action' : '/saveUser.action', this.formData)
-              .then((res) => {
-                if (res.data.code === 1) {
-                  this.dialogFormVisible = false
-                  this.$message.success(res.data.msg);
-                  this.fetch(this.pagination.current)
-                }
-              })
+            this.$ajax.post(this.formData.id ? '/updateUser.action' : '/saveUser.action', {
+              ...this.formData,
+              areaId: this.formData.area[this.formData.area.length - 1],
+              entryTime: this.formatDate(new Date(this.formData.entryTime), 'yyyy-MM-dd hh:mm:ss'),
+              birthday: this.formatDate(new Date(this.formData.birthday), 'yyyy-MM-dd hh:mm:ss')
+            }).then((res) => {
+              if (res.data.code === 1) {
+                this.dialogFormVisible = false
+                this.$message.success(res.data.msg);
+                this.fetch(this.pagination.current)
+              }
+            })
             return false;
           }
         });
@@ -188,11 +205,20 @@
               this.roles = res.data.data
             }
           })
+      },
+      getMall() {
+        this.$ajax.post('/listAllShopVo.action', {page: 1, limit: 100})
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.mallList = res.data.data
+            }
+          })
       }
     },
     mounted() {
       this.fetch()
       this.getRole()
+      this.getMall()
     }
   }
 </script>

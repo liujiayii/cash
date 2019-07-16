@@ -31,7 +31,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remarks">
-          <el-input type="text" v-model="formData.remarks" autocomplete="off"></el-input>
+          <el-input type="textarea" v-model="formData.remarks" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="用户账号" prop="username">
           <el-input type="text" v-model="formData.username" autocomplete="off"></el-input>
@@ -63,7 +63,7 @@
                           placeholder="选择日期"></el-date-picker>
         </el-form-item>
         <el-form-item label="用户备注" prop="uremarks">
-          <el-input type="text" v-model="formData.uremarks" autocomplete="off"></el-input>
+          <el-input type="textarea" v-model="formData.uremarks" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div v-for="item of accessList" :key="item.parentIds">
@@ -146,7 +146,19 @@
           phone: [{required: true, message: '请输入内容', trigger: 'blur'}],
           birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
           sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          name: [{required: true, message: '请输入内容', trigger: 'blur'}]
+          name: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          type: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          provid: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          addr: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          createTime: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          state: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          remarks: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          username: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          uname: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          uphone: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          age: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          entryTime: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          uremarks: [{required: true, message: '请输入内容', trigger: 'blur'}],
         },
         accessList: JSON.parse(sessionStorage.getItem('access')),
         selectAccess: {ids: [], id: null}
@@ -241,7 +253,7 @@
         }).catch(() => {
           this.$message.info('已取消');
         });
-      }
+      },
     },
     mounted() {
       this.fetch()
