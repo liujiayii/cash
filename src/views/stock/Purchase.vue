@@ -14,7 +14,8 @@
         <template v-if="formData.goodstrafficState===2">
           <el-form-item label="送货店铺">
             <el-select v-model="formData.receivingShopId">
-              <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId" placeholder="选择店铺"></el-option>
+              <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId"
+                         placeholder="选择店铺"></el-option>
             </el-select>
           </el-form-item>
         </template>
@@ -64,10 +65,18 @@
       <el-table-column prop="totalMoney" label="总金额"></el-table-column>
       <el-table-column prop="orderDate" label="订单日期"></el-table-column>
       <el-table-column prop="deliveryDate" label="送货日期"></el-table-column>
+      <el-table-column prop="transportationState" label="状态">
+        <template slot-scope="scope">
+          <span>{{scope.row.transportationState===1?'未审批':scope.row.transportationState===2?'备货中':scope.row.transportationState===3?'已出库':scope.row.transportationState===4?'已拒绝':scope.row.transportationState===5?'已入库':'已取消'}}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="remark" label="备注"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="handleEdit(scope.row)">查看</el-button>
+          <el-button v-if="scope.row.transportationState<6" type="text" size="small" @click="handleDelete(scope.row)">
+            取消
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -119,6 +128,23 @@
       reset() {
         this.searchForm = {}
         this.fetch()
+      },
+      handleDelete(row) {
+        this.$confirm('是否取消?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$ajax.post('/updateSubscribe.action', {id: row.id, transportationState: 6})
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.$message.success(res.data.msg)
+                this.fetch(this.pagination.current)
+              }
+            })
+        }).catch(() => {
+          this.$message.info('已取消');
+        });
       },
       handleEdit(row) {
         this.$ajax.post('/listGoodstrafficOrdersProduct.action', {id: row.id})
