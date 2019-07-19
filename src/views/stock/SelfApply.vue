@@ -1,5 +1,33 @@
 <template>
   <div>
+    <el-dialog :visible.sync="dialogFormVisible" @closed="closeForm" append-to-body fullscreen>
+      <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
+        <el-form-item label="送货日期" prop="deliveryDate">
+          <el-date-picker v-model="formData.deliveryDate" type="date" placeholder="选择日期"></el-date-picker>
+        </el-form-item>
+        <template v-if="formData.goodstrafficState===2">
+          <el-form-item label="送货店铺">
+            <el-select v-model="formData.receivingShopId">
+              <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId"
+                         placeholder="选择店铺"></el-option>
+            </el-select>
+          </el-form-item>
+        </template>
+        <el-form-item label="备注">
+          <el-input type="text" v-model="formData.remark" autocomplete="off"></el-input>
+        </el-form-item>
+        <div v-for="item of goodsList" :key="item.productTypeId">
+          <el-divider content-position="left">{{item.productTypeName}}</el-divider>
+          <el-form-item v-for="item_c of item.product" :label="item_c.name" :key="item_c.id">
+            <el-input type="number" v-model="goodsCount[item_c.id]" autocomplete="off"></el-input>
+          </el-form-item>
+        </div>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submit('ruleForm')">确 定</el-button>
+      </div>
+    </el-dialog>
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item>
@@ -11,6 +39,7 @@
           <el-button type="primary" @click="reset()">重置</el-button>
         </el-form-item>
       </el-form>
+      <el-button type="primary" size="small" round @click="dialogFormVisible=true">新建</el-button>
     </div>
     <el-dialog :visible.sync="dialogFormVisible2" append-to-body>
       <el-table :data="tableData2" style="width: 100%">
@@ -25,18 +54,24 @@
       </div>
     </el-dialog>
     <el-table :data="tableData" style="width: 100%" v-loading="loading">
-      <el-table-column prop="id" label="物流表ID"></el-table-column>
+      <el-table-column prop="id" label="ID"></el-table-column>
       <el-table-column prop="receivingShopName" label="送货店名称"></el-table-column>
       <el-table-column prop="totalMoney" label="总金额"></el-table-column>
       <el-table-column prop="serialNumber" label="流水号"></el-table-column>
       <el-table-column prop="deliveryDate" label="送货日期"></el-table-column>
+      <el-table-column prop="transportationState" label="状态">
+        <template slot-scope="scope">
+          <span>{{scope.row.transportationState===1?'未审批':scope.row.transportationState===2?'备货中':scope.row.transportationState===3?'已出库':scope.row.transportationState===4?'已拒绝':scope.row.transportationState===5?'已入库':'已取消'}}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="remark" label="备注"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="handleEdit(scope.row)">查看</el-button>
-          <el-button v-if="scope.row.transportation_state===3" type="text" size="small" @click="handleClick(scope.row)">
+          <el-button v-if="scope.row.transportationState===3" type="text" size="small" @click="handleClick(scope.row)">
             入库
           </el-button>
+          <el-button type="text" size="small" @click="handleDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -61,11 +96,24 @@
         pagination: {},
         loading: false,
         searchForm: {},
+        dialogFormVisible: false,
+        formData: {},
+        rules: {
+          birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          deliveryDate: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          name: [{required: true, message: '请输入内容', trigger: 'blur'}]
+        },
+        goodsList: JSON.parse(sessionStorage.getItem('goods')),
+        goodsCount: {},
         dialogFormVisible2: false,
         tableData2: []
       }
     },
     methods: {
+      closeForm() {
+        this.formData = {}
+        this.goodsCount = {}
+      },
       selectTime(e) {
         this.searchForm.startdate = this.formatDate(e[0], 'yyyy-MM-dd')
         this.searchForm.enddate = this.formatDate(e[1], 'yyyy-MM-dd')
@@ -73,6 +121,33 @@
       reset() {
         this.searchForm = {}
         this.fetch()
+      },
+      submit(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            let cacheArr = []
+            for (let i in this.goodsCount) {
+              cacheArr.push({
+                productId: i,
+                quantity: this.goodsCount[i]
+              })
+            }
+            this.$ajax.post(this.formData.id ? '' : '/addprocurement.action', {
+              ...this.formData,
+              goodstrafficState: 1,
+              deliveryDate: this.formatDate(this.formData.deliveryDate, 'yyyy-MM-dd hh:mm:ss'),
+              time: this.formatDate(this.formData.deliveryDate, 'yyyy-MM-dd hh:mm:ss'),
+              g: JSON.stringify(cacheArr)
+            }).then((res) => {
+              if (res.data.code === 1) {
+                this.dialogFormVisible = false
+                this.$message.success(res.data.msg);
+                this.fetch(this.pagination.current)
+              }
+            })
+            return false;
+          }
+        });
       },
       handleEdit(row) {
         this.$ajax.post('/listGoodstrafficOrdersProduct.action', {id: row.id})
@@ -83,17 +158,43 @@
             }
           })
       },
+      handleDelete(row) {
+        this.$confirm('是否删除?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$ajax.post('/deleteGoodstrafficManagement.action', {id: row.id})
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.$message.success(res.data.msg)
+                this.fetch(this.pagination.current)
+              }
+            })
+        }).catch(() => {
+          this.$message.info('已取消');
+        });
+      },
       handleClick(row) {
         this.$confirm('是否入库?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.$ajax.post('/updateQuantity.action', {id: row.id, judge: 2})
+          this.$ajax.post('/listGoodstrafficOrdersProduct.action', {id: row.id})
             .then((res) => {
               if (res.data.code === 1) {
-                this.$message.success(res.data.msg);
-                this.fetch(this.pagination.current)
+                let inventory = []
+                for (let i = 0; i < res.data.data.length; i++) {
+                  inventory.push({productId: res.data.data[i].productId, quantity: res.data.data[i].quantity})
+                }
+                this.$ajax.post('/updateQuantity.action', {id: row.id, judge: 2, inventory: JSON.stringify(inventory)})
+                  .then((res) => {
+                    if (res.data.code === 1) {
+                      this.$message.success(res.data.msg)
+                      this.fetch(this.pagination.current)
+                    }
+                  })
               }
             })
         }).catch(() => {

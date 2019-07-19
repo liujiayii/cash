@@ -17,10 +17,14 @@
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item>
-          <el-input placeholder="请按分店查询" type="text" v-model="searchForm.shopID"></el-input>
+          <el-select v-model="searchForm.shopId">
+            <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId" placeholder="选择店铺"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item>
-          <el-input placeholder="请按商品分类查询" type="text" v-model="searchForm.productTypeId"></el-input>
+          <el-select v-model="searchForm.productTypeId">
+            <el-option v-for="item of productType" :key="item.id" :label="item.productTypeName" :value="item.id" placeholder="按商品分类查询"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="fetch()">查询</el-button>
@@ -63,6 +67,8 @@
           inventoryWarning: [{required: true, message: '请输入内容', trigger: 'blur'}],
           quantity: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
+        mallList: JSON.parse(sessionStorage.getItem('mall')),
+        productType: JSON.parse(sessionStorage.getItem('product'))
       }
     },
     methods: {

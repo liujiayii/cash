@@ -35,7 +35,9 @@
           <el-input placeholder="输入角色查询" type="text" v-model="searchForm.name"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-input placeholder="输入店铺查询" type="text" v-model="searchForm.shopId"></el-input>
+          <el-select v-model="searchForm.shopId">
+            <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId" placeholder="选择店铺"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="fetch()">查询</el-button>
@@ -85,7 +87,8 @@
         },
         dialogFormVisible2: false,
         accessList: JSON.parse(sessionStorage.getItem('access')),
-        selectAccess: {ids: [], id: null}
+        selectAccess: {ids: [], id: null},
+        mallList: JSON.parse(sessionStorage.getItem('mall'))
       }
     },
     methods: {

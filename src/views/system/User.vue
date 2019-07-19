@@ -30,11 +30,6 @@
         <el-form-item label="区域" prop="areaId">
           <el-cascader v-model="formData.area" :options="area"></el-cascader>
         </el-form-item>
-        <el-form-item label="店铺" prop="shopId">
-          <el-select v-model="formData.shopId">
-            <el-option v-for="item of mallList" :label="item.name" :value="item.id"></el-option>
-          </el-select>
-        </el-form-item>
         <el-form-item label="生日" prop="birthday">
           <el-date-picker v-model="formData.birthday" placeholder="选择生日"></el-date-picker>
         </el-form-item>
@@ -68,7 +63,10 @@
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item>
-          <el-input placeholder="请按分店查询" type="text" v-model="searchForm.shopID"></el-input>
+          <el-select v-model="searchForm.shopId">
+            <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId"
+                       placeholder="选择店铺"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="fetch()">查询</el-button>
@@ -104,6 +102,14 @@
     name: "User",
     mixins: [mixin],
     data() {
+      let validPhone = (rule, value, callback) => {
+        const valid = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
+        if (!valid.test(value)) {
+          callback(new Error('请输入正确的手机号'));
+        } else {
+          callback();
+        }
+      }
       return {
         tableData: [],
         pagination: {},
@@ -113,7 +119,8 @@
         dialogFormVisible: false,
         formData: {},
         rules: {
-          phone: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          phone: [{required: true, message: '请输入内容', trigger: 'blur'},
+            {validator: validPhone, trigger: 'blur'}],
           birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
           sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
           name: [{required: true, message: '请输入内容', trigger: 'blur'}],
@@ -123,11 +130,10 @@
           age: [{required: true, message: '请输入内容', trigger: 'blur'}],
           entryTime: [{required: true, message: '请输入内容', trigger: 'blur'}],
           username: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          state: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          remarks: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          state: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
         roles: [],
-        mallList: []
+        mallList: JSON.parse(sessionStorage.getItem('mall'))
       }
     },
     methods: {
@@ -137,7 +143,8 @@
       },
       handleEdit(row) {
         delete row.password
-        this.formData = JSON.parse(JSON.stringify(row))
+        let area = [row.userProvinceId + '', row.userCityId + '', row.areaId + '']
+        this.formData = {...JSON.parse(JSON.stringify(row)), area}
         this.dialogFormVisible = true
       },
       submit(formName) {
@@ -145,7 +152,9 @@
           if (valid) {
             this.$ajax.post(this.formData.id ? '/updateUser.action' : '/saveUser.action', {
               ...this.formData,
-              areaId: this.formData.area[this.formData.area.length - 1],
+              areaId: this.formData.area[2],
+              userCityId: this.formData.area[1],
+              userProvinceId: this.formData.area[0],
               entryTime: this.formatDate(new Date(this.formData.entryTime), 'yyyy-MM-dd hh:mm:ss'),
               birthday: this.formatDate(new Date(this.formData.birthday), 'yyyy-MM-dd hh:mm:ss')
             }).then((res) => {
@@ -205,20 +214,11 @@
               this.roles = res.data.data
             }
           })
-      },
-      getMall() {
-        this.$ajax.post('/listAllShopVo.action', {page: 1, limit: 100})
-          .then((res) => {
-            if (res.data.code === 1) {
-              this.mallList = res.data.data
-            }
-          })
       }
     },
     mounted() {
       this.fetch()
       this.getRole()
-      this.getMall()
     }
   }
 </script>

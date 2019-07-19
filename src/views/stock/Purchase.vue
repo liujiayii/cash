@@ -8,13 +8,13 @@
             <el-option label="调拨" :value="2"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="送货日期">
+        <el-form-item label="送货日期" prop="deliveryDate">
           <el-date-picker v-model="formData.deliveryDate" type="date" placeholder="选择日期"></el-date-picker>
         </el-form-item>
         <template v-if="formData.goodstrafficState===2">
           <el-form-item label="送货店铺">
             <el-select v-model="formData.receivingShopId">
-              <el-option v-for="item of mallList" :label="item.name" :value="item.id"></el-option>
+              <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId" placeholder="选择店铺"></el-option>
             </el-select>
           </el-form-item>
         </template>
@@ -42,7 +42,6 @@
         <el-table-column prop="productTypeName" label="商品分类名称"></el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible2 = false">取 消</el-button>
         <el-button type="primary" @click="dialogFormVisible2 = false">确 定</el-button>
       </div>
     </el-dialog>
@@ -98,14 +97,14 @@
         rules: {
           goodstrafficState: [{required: true, message: '请输入内容', trigger: 'blur'}],
           birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          deliveryDate: [{required: true, message: '请输入内容', trigger: 'blur'}],
           name: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
-        goodsList: [],
+        goodsList: JSON.parse(sessionStorage.getItem('goods')),
         goodsCount: {},
         dialogFormVisible2: false,
         tableData2: [],
-        mallList: []
+        mallList: JSON.parse(sessionStorage.getItem('mall'))
       }
     },
     methods: {
@@ -170,27 +169,9 @@
             }
           })
       },
-      getAllGoods() {
-        this.$ajax.post('/listProductAndProductType.action')
-          .then((res) => {
-            if (res.data.code === 1) {
-              this.goodsList = res.data.data
-            }
-          })
-      },
-      getMall() {
-        this.$ajax.post('/listAllShopVo.action', {page: 1, limit: 100})
-          .then((res) => {
-            if (res.data.code === 1) {
-              this.mallList = res.data.data
-            }
-          })
-      }
     },
     mounted() {
-      this.getAllGoods()
       this.fetch()
-      this.getMall()
     }
   }
 </script>

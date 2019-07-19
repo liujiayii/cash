@@ -21,20 +21,31 @@
         <el-table-column prop="productTypeName" label="商品分类名称"></el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible2 = false">取 消</el-button>
+        <template v-if="showIndex.transportationState===1">
+          <el-button type="success" @click="changeState(2)">通 过</el-button>
+          <el-button type="danger" @click="changeState(4)">拒 绝</el-button>
+        </template>
         <el-button type="primary" @click="dialogFormVisible2 = false">确 定</el-button>
       </div>
     </el-dialog>
     <el-table :data="tableData" style="width: 100%" v-loading="loading">
-      <el-table-column prop="id" label="物流表ID"></el-table-column>
-      <el-table-column prop="receivingShopName" label="申请调拨店名称"></el-table-column>
+      <el-table-column prop="id" label="ID"></el-table-column>
+      <el-table-column prop="shipmentsShopName" label="申请调拨店名称"></el-table-column>
       <el-table-column prop="totalMoney" label="总金额"></el-table-column>
       <el-table-column prop="serialNumber" label="流水号"></el-table-column>
       <el-table-column prop="deliveryDate" label="送货日期"></el-table-column>
+      <el-table-column prop="transportationState" label="状态">
+        <template slot-scope="scope">
+          <span>{{scope.row.transportationState===1?'未审批':scope.row.transportationState===2?'备货中':scope.row.transportationState===3?'已出库':scope.row.transportationState===4?'已拒绝':scope.row.transportationState===5?'已入库':'已取消'}}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="remark" label="备注"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="handleEdit(scope.row)">查看</el-button>
+          <el-button v-if="scope.row.transportationState===2" type="text" size="small" @click="handleClick(scope.row)">
+            出库
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -60,7 +71,8 @@
         loading: false,
         searchForm: {},
         dialogFormVisible2: false,
-        tableData2: []
+        tableData2: [],
+        showIndex: {}
       }
     },
     methods: {
@@ -78,8 +90,53 @@
             if (res.data.code === 1) {
               this.tableData2 = res.data.data
               this.dialogFormVisible2 = true
+              this.showIndex = row
             }
           })
+      },
+      changeState(transportationState) {
+        this.$confirm('是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$ajax.post('/updateSubscribe.action', {id: this.showIndex.id, transportationState})
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.$message.success(res.data.msg)
+                this.dialogFormVisible2 = false
+                this.fetch(this.pagination.current)
+              }
+            })
+        }).catch(() => {
+          this.$message.info('已取消');
+        });
+      },
+      handleClick(row) {
+        this.$confirm('是否出库?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$ajax.post('/listGoodstrafficOrdersProduct.action', {id: row.id})
+            .then((res) => {
+              if (res.data.code === 1) {
+                let inventory = []
+                for (let i = 0; i < res.data.data.length; i++) {
+                  inventory.push({productId: res.data.data[i].productId, quantity: res.data.data[i].quantity})
+                }
+                this.$ajax.post('/updateQuantity.action', {id: row.id, judge: 1, inventory: JSON.stringify(inventory)})
+                  .then((res) => {
+                    if (res.data.code === 1) {
+                      this.$message.success(res.data.msg)
+                      this.fetch(this.pagination.current)
+                    }
+                  })
+              }
+            })
+        }).catch(() => {
+          this.$message.info('已取消');
+        });
       },
       fetch(page) {
         this.loading = true

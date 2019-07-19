@@ -37,7 +37,7 @@
           <el-input type="text" v-model="formData.username" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="用户密码" prop="password">
-          <el-input type="text" v-model="formData.password" autocomplete="off"></el-input>
+          <el-input type="password" v-model="formData.password" autocomplete="off" clearable></el-input>
         </el-form-item>
         <el-form-item label="用户姓名" prop="uname">
           <el-input type="text" v-model="formData.uname" autocomplete="off"></el-input>
@@ -105,11 +105,12 @@
       <el-table-column prop="provice" label="地区"></el-table-column>
       <el-table-column prop="addr" label="地址"></el-table-column>
       <el-table-column prop="createTime" label="开业时间">
-        <template slot-scope="scope"><span>{{formatDate(new Date(scope.row.createTime),'yyyy-MM-dd')}}</span></template>
+        <template slot-scope="scope"><span>{{formatDate(new Date(scope.row.createTime.time),'yyyy-MM-dd')}}</span>
+        </template>
       </el-table-column>
       <el-table-column prop="remarks" label="备注"></el-table-column>
       <el-table-column prop="state" label="状态">
-        <template slot-scope="scope"><span>{{scope.row.type===1?'营业中':'未营业'}}</span></template>
+        <template slot-scope="scope"><span>{{scope.row.state===1?'营业中':'未营业'}}</span></template>
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
@@ -134,6 +135,14 @@
     name: "Mall",
     mixins: [mixin],
     data() {
+      let validPhone = (rule, value, callback) => {
+        const valid = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
+        if (!valid.test(value)) {
+          callback(new Error('请输入正确的手机号'));
+        } else {
+          callback();
+        }
+      }
       return {
         tableData: [],
         area,
@@ -143,7 +152,8 @@
         dialogFormVisible: false,
         formData: {},
         rules: {
-          phone: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          phone: [{required: true, message: '请输入内容', trigger: 'blur'},
+            {validator: validPhone, trigger: 'blur'}],
           birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
           sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
           name: [{required: true, message: '请输入内容', trigger: 'blur'}],
@@ -152,13 +162,12 @@
           addr: [{required: true, message: '请输入内容', trigger: 'blur'}],
           createTime: [{required: true, message: '请输入内容', trigger: 'blur'}],
           state: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          remarks: [{required: true, message: '请输入内容', trigger: 'blur'}],
           username: [{required: true, message: '请输入内容', trigger: 'blur'}],
           uname: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          uphone: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          uphone: [{required: true, message: '请输入内容', trigger: 'blur'},
+            {validator: validPhone, trigger: 'blur'}],
           age: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          entryTime: [{required: true, message: '请输入内容', trigger: 'blur'}],
-          uremarks: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          entryTime: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
         accessList: JSON.parse(sessionStorage.getItem('access')),
         selectAccess: {ids: [], id: null}
@@ -185,7 +194,9 @@
               this.formData = JSON.parse(JSON.stringify(
                 {
                   ...row,
+                  createTime: row.createTime.time,
                   area: [row.provid + '', row.cityid + '', row.areaid + ''],
+                  uId: res.data.userVo2.id,
                   username: res.data.userVo2.username,
                   uname: res.data.userVo2.name,
                   uphone: res.data.userVo2.phone,
@@ -194,6 +205,7 @@
                   entryTime: res.data.userVo2.entryTime,
                   birthday: res.data.userVo2.birthday,
                   uremarks: res.data.userVo2.remarks,
+                  password: res.data.userVo2.password,
                 }))
               this.dialogFormVisible = true
             }
@@ -225,7 +237,7 @@
       },
       fetch(page) {
         this.loading = true
-        this.$ajax.post('/listAllShopVo.action', {limit: 10, page: page || 1, ...this.searchForm})
+        this.$ajax.post('/listByShopNameVo.action', {limit: 10, page: page || 1, ...this.searchForm})
           .then((res) => {
             if (res.data.code === 1) {
               const pagination = {...this.pagination};

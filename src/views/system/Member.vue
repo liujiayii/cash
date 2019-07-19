@@ -6,7 +6,7 @@
           <el-input type="text" v-model="formData.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="手机号" prop="phone">
-          <el-input type="text" v-model="formData.phone" autocomplete="off"></el-input>
+          <el-input type="text" v-model="formData.phone" autocomplete="off" maxlength="11"></el-input>
         </el-form-item>
         <el-form-item label="性别" prop="sex">
           <el-select v-model="formData.sex">
@@ -72,6 +72,14 @@
     name: "Member",
     mixins: [mixin],
     data() {
+      let validPhone = (rule, value, callback) => {
+        const valid = /^[1][3,4,5,6,7,8,9][0-9]{9}$/
+        if (!valid.test(value)) {
+          callback(new Error('请输入正确的手机号'));
+        } else {
+          callback();
+        }
+      }
       return {
         tableData: [],
         pagination: {},
@@ -80,7 +88,8 @@
         dialogFormVisible: false,
         formData: {},
         rules: {
-          phone: [{required: true, message: '请输入内容', trigger: 'blur'}],
+          phone: [{required: true, message: '请输入内容', trigger: 'blur'},
+            {validator: validPhone, trigger: 'blur'}],
           birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
           sex: [{required: true, message: '请输入内容', trigger: 'blur'}],
           name: [{required: true, message: '请输入内容', trigger: 'blur'}]
@@ -130,8 +139,7 @@
               this.pagination = pagination;
             }
           })
-      }
-      ,
+      },
       stateChange(row, state) {
         this.$ajax.post('/updateMemberState.action', {id: row.id, state})
           .then((res) => {
@@ -139,8 +147,7 @@
               this.$message.success(res.data.msg);
             }
           })
-      }
-      ,
+      },
       handleDelete(row) {
         this.$confirm('是否删除?', '提示', {
           confirmButtonText: '确定',

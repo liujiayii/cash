@@ -2,8 +2,7 @@
   <div>
     <el-form :inline="true" :model="searchForm">
       <el-form-item label="日期">
-        <el-date-picker v-model="searchForm.createTime" value-format="timestamp" type="month"
-                        placeholder="选择月"></el-date-picker>
+        <el-date-picker v-model="searchForm.createTime" value-format="timestamp" placeholder="选择日期"></el-date-picker>
       </el-form-item>
       <el-form-item label="交易方式">
         <el-select v-model="searchForm.payMethod" placeholder="交易方式">
@@ -17,7 +16,14 @@
         <el-button type="primary" @click="getMoney">查询</el-button>
       </el-form-item>
     </el-form>
-    <div>{{money}}</div>
+    <div style="display: flex">
+      <el-card header="总销售金额" style="width: 200px" shadow="hover">
+        <div>{{money.sumOrderMoney}}</div>
+      </el-card>
+      <el-card header="订单总量" style="width: 200px;margin-left: 10px" shadow="hover">
+        <div>{{money.sumOrder}}</div>
+      </el-card>
+    </div>
     <el-card style="height: 500px;width: 30%" shadow="hover" header="当日销售商品销量占比图">
       <div id="c1"></div>
     </el-card>
@@ -41,7 +47,7 @@
         this.$ajax.post('/getPercentageOfProductType.action',)
           .then((res) => {
             if (res.data.code === 1) {
-              let data = [...res.data.listOrder, ...res.data.listOrder]
+              let data = res.data.listOrder
               let max = 0;
               data.forEach(obj => {
                 if (obj.count > max) {

@@ -69,8 +69,6 @@
                 if (res.data.code === 1) {
                   window.sessionStorage.setItem('userName', this.form.username)
                   this.$router.push({path: '/Home'})
-                } else {
-                  this.$message.error(res.data.data.message)
                 }
               })
             return false;

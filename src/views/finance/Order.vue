@@ -15,6 +15,12 @@
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item>
+          <el-input placeholder="输入店铺查询" type="text" v-model="searchForm.shopName"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-input placeholder="输入订单号查询" type="text" v-model="searchForm.number"></el-input>
+        </el-form-item>
+        <el-form-item>
           <el-button type="primary" @click="fetch()">查询</el-button>
           <el-button type="primary" @click="reset()">重置</el-button>
         </el-form-item>
