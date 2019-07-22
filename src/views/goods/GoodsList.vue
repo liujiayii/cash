@@ -19,7 +19,7 @@
           </el-form-item>
       </el-form>
     </div>
-    <span class="add" @click="dialogFormVisible = true">添加+</span>
+    <span class="add" @click="addGoods">添加+</span>
     <el-table
             v-loading="loading"
             :data="tableData"
@@ -74,7 +74,7 @@
         <template slot-scope="scope">
           <el-switch
                   v-model="scope.row.state==1?true:false"
-                  disabled
+                  @change="changState(scope.$index, scope.row)"
                   class="switchs"
                   active-text="已上架"
                   inactive-text="未上架"
@@ -108,7 +108,7 @@
             layout="total, prev, pager, next, jumper"
             :total="pagination.total">
     </el-pagination>
-    <el-dialog title="添加商品" :visible.sync="dialogFormVisible" :modal-append-to-body="modalAppend" @closed="form={}">
+    <el-dialog title="添加商品" :visible.sync="dialogFormVisible" :modal-append-to-body="modalAppend" @closed="closeds">
       <el-form :model="form" class="demo-ruleForm flex">
         <el-form-item label="商品名称" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品名称不能为空'}] "
                       class="formlist">
@@ -119,15 +119,15 @@
         </el-form-item>
         <el-form-item label="商品进货价" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品进货价不能为空'}] "
                       class="formlist">
-          <el-input v-model="form.pleased" autocomplete="off"></el-input>
+          <el-input v-model="form.pleased" autocomplete="off" type="number"></el-input>
         </el-form-item>
         <el-form-item label="商品销售价" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品销售价不能为空'}] "
                       class="formlist">
-          <el-input v-model="form.salePrice" autocomplete="off"></el-input>
+          <el-input v-model="form.salePrice" autocomplete="off" type="number"></el-input>
         </el-form-item>
         <el-form-item label="商品会员价" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品会员价不能为空'}] "
                       class="formlist">
-          <el-input v-model="form.memberPrice" autocomplete="off"></el-input>
+          <el-input v-model="form.memberPrice" autocomplete="off" type="number"></el-input>
         </el-form-item>
 
         <el-form-item label="商品状态" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品状态不能为空'}] "
@@ -149,8 +149,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="商品库存" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品库存不能为空'}] "
-                      class="formlist">
-          <el-input v-model="form.quantity" autocomplete="off"></el-input>
+                      class="formlist" v-if="quantityShow">
+          <el-input v-model="form.quantity" autocomplete="off" type="number"></el-input>
+        </el-form-item>
+        <el-form-item label="库存预警数量" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品库存不能为空'}] "
+                      class="formlist" v-if="quantityShow">
+          <el-input v-model="form.inventoryWarning" autocomplete="off" type="number"></el-input>
         </el-form-item>
         <el-form-item label="商品规格" class="formlist" :label-width="formLabelWidth"
                       :rules="[ { required: true, message: '商品规格不能为空'}] ">
@@ -163,7 +167,8 @@
         <el-form-item label="商品图片" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品图片不能为空'}] "
                       class="formlistbig">
           <el-upload
-                  action="http://192.168.1.184:8080/upload.action"
+                  action="http://192.168.1.104:8080/upload.action"
+                  :file-list="fileList"
                   list-type="picture-card"
                   :on-success="handlesuccess"
                   :on-preview="handlePictureCardPreview"
@@ -175,10 +180,6 @@
           <el-dialog :visible.sync="dialogVisible">
             <img width="100%" :src="dialogImageUrl" alt="">
           </el-dialog>
-<!--          <p>-->
-<!--            <img :src="form.image" alt="">-->
-<!--            替换前图片-->
-<!--          </p>-->
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -186,7 +187,15 @@
         <el-button type="primary" @click="addCommodity">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog title="打印条码" :visible.sync="showImg" :modal-append-to-body="modalAppend" >
+    <div class="prinbox">
+    <img src="" alt="" id="imgewm">
+      <el-button type="primary" plain @click="doPrint">打印</el-button>
+<!--    <span>打印份数：</span> <el-input v-model="Print" autocomplete="off"></el-input>-->
+    </div>
+    </el-dialog>
   </div>
+
 </template>
 
 <script>
@@ -194,6 +203,10 @@
     name: "GoodsList",
     data() {
       return {
+        Printbox:false,
+        Print:1,
+        showImg:false,
+        quantityShow:true,
         searchForm: { phone:"", shop:"",  productTypeId:"" },
         loading: false,
         pagination: {},
@@ -215,16 +228,49 @@
           color: '',
           state: false,
           productTypeId: '',
-          quantity: ''
+          quantity: '',
+      inventoryWarning:''
         },
         imgArr: [],
         formLabelWidth: '120px',
+        fileList: [],
       }
     },
     methods: {
+      changState(index, row){
+        this.$ajax.post("updateProductState.action", {
+          id:row.id,
+          state:row.state==1?2:1
+          }
+        ).then(res => {
+        this.seachs(this.pagination.current)
+        })
+      },
+      closeds(){
+        this.form={}
+        this.fileList=[]
+      },
+      doPrint() {
+        this.$print(document.getElementById('imgewm')) // 使用
+      },
+      addGoods(){
+        this.dialogFormVisible = true
+        this.fileList= []
+      },
       //打印
-      handlePrint(){
+      handlePrint(index, row){
+        this.showImg=true
+        this.$nextTick(() => {
+          document.getElementById('imgewm').src="/missionCreateCodeImage.action?number="+row.barCode;
+          console.log(document.getElementById('imgewm').src)
+        })
 
+        // this.$ajax.post("missionCreateCodeImage.action", {
+        //   number:row.barCode
+        //   }
+        // ).then(res => {
+        //
+        // })
       },
       //模糊查询
       seachs(num){
@@ -298,12 +344,27 @@
       status(typ) {},
       //添加商品
       addCommodity() {
+        console.log(this.fileList)
+        return false
         if (this.form.state == true) {
           this.form.state = 1
         } else {
           this.form.state = 2
         }
-        this.$ajax.post("addProduct.action", this.form
+        if(this.form.name==""||this.form.pleased==""||this.form.salePrice==""||this.form.memberPrice==""||this.form.specification==""||this.form.color==""||this.form.state==""||this.form.productTypeId==""||this.form.quantity==""||this.form.inventoryWarning==""){
+          this.$message({
+            message:"请将信息补充完整后在提交。",
+            type: 'warning'
+          });
+          return false
+        }
+        this.quantityShow=true
+
+
+        this.form.productType=""
+        this.form.shopId=""
+        this.form.canUse=""
+        this.$ajax.post(this.form.id?"createProduct.action":"addProduct.action", this.form
         ).then(res => {
           if (res.data.code == 1) {
             this.$message({
@@ -312,6 +373,7 @@
             });
             this.dialogFormVisible = false,
             this.form = {}
+            this.seachs(this.pagination.current)
           } else {
             this.$message({
               message: res.data.msg,
@@ -323,7 +385,9 @@
       },
       //图片上传
       handlesuccess(file, fileList) {
+        console.log(file)
        this.form.image = file.data
+        console.log(this.form.image)
       },
       handleRemove(file, fileList) {
         console.log(file, fileList);
@@ -335,11 +399,21 @@
       //修改
       handleEdit(index, row) {
         console.log(index, row);
+        this.quantityShow=false
+
         this.$ajax.post("getProduct.action", {productId:row.id}
         ).then(res => {
           this.dialogFormVisible = true
           this.form=res.data.product
-          this.form.image=res.data.product.image
+
+          if(res.data.product.state==1){
+            this.form.state= true
+          }else if(res.data.product.state==2){
+            this.form.state= false
+          }
+          let cacheFile = []
+          if (res.data.product.image!== ''&&res.data.product.image!== 'null'&&res.data.product.image!== null) cacheFile.push({name: 0, url:res.data.product.image})
+          this.fileList = cacheFile
         })
       },
       handleDelete(row) {
@@ -397,4 +471,5 @@
   .formlist {
     width: 50%
   }
+  /*.prinbox{width:600px;height:500px;}*/
 </style>

@@ -27,10 +27,10 @@
       </el-table-column>
       <el-table-column label="操作" fixed="right" width="400">
         <template slot-scope="scope">
-          <el-button
-                  size="mini"
-                  @click="handlePrint(scope.$index, scope.row)">打印条码
-          </el-button>
+<!--          <el-button-->
+<!--                  size="mini"-->
+<!--                  @click="handlePrint(scope.$index, scope.row)">打印条码-->
+<!--          </el-button>-->
           <el-button
                   size="mini"
                   @click="handleEdit(scope.$index, scope.row)">编辑
@@ -53,7 +53,7 @@
       <el-form :model="form" class="demo-ruleForm flex">
         <el-form-item label="商品分类" :label-width="formLabelWidth" :rules="[ { required: true, message: '商品分类不能为空'}] "
                       class="formlist">
-          <el-input v-model="form.classa" autocomplete="off"></el-input>
+          <el-input v-model="form.classa" autocomplete="off" maxlength="10"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
