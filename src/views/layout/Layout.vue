@@ -94,6 +94,7 @@
       this.getAllMall()
       this.getAllProductType()
       this.getAllGoods()
+      this.$store.commit('changePermission', JSON.parse(sessionStorage.getItem('permission')))
     },
     methods: {
       getAllGoods() {
@@ -131,7 +132,20 @@
           this.$ajax.post('/listAllPermissions.action')
             .then((res) => {
               if (res.data.code === 1) {
-                sessionStorage.setItem('access', JSON.stringify(res.data.data))
+                const generator = (access, parent) => {
+                  return access.map(item => {
+                    const current = {
+                      id: item.parentIds || item.id,
+                      name: item.parent_names || item.name,
+                    }
+                    if (item.permissions && item.permissions.length > 0) {
+                      current.children = generator(item.permissions, current)
+                    }
+                    return current
+                  })
+                }
+                const access = generator(res.data.data)
+                sessionStorage.setItem('access', JSON.stringify(access))
               }
             })
         }

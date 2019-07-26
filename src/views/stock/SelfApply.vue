@@ -19,7 +19,7 @@
         <div v-for="item of goodsList" :key="item.productTypeId">
           <el-divider content-position="left">{{item.productTypeName}}</el-divider>
           <el-form-item v-for="item_c of item.product" :label="item_c.name" :key="item_c.id">
-            <el-input type="number" v-model="goodsCount[item_c.id]" autocomplete="off"></el-input>
+            <el-input-number v-model="goodsCount[item_c.id]" controls-position="right" :min="0"></el-input-number>
           </el-form-item>
         </div>
       </el-form>

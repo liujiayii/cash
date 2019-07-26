@@ -3,10 +3,10 @@
     <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body>
       <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
         <el-form-item label="姓名" prop="name">
-          <el-input type="text" v-model="formData.name" autocomplete="off"></el-input>
+          <el-input type="text" v-model="formData.name" maxlength="20" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="手机号" prop="phone">
-          <el-input type="text" v-model="formData.phone" autocomplete="off"></el-input>
+          <el-input type="text" v-model="formData.phone" maxlength="11" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="性别" prop="sex">
           <el-select v-model="formData.sex">
@@ -14,9 +14,8 @@
             <el-option label="女" :value="2"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="区域经理" prop="agentType">
+        <el-form-item v-if="formData.agentType!==0" label="区域经理" prop="agentType">
           <el-select v-model="formData.agentType">
-            <el-option label="不是经理" :value="0"></el-option>
             <el-option label="省级" :value="1"></el-option>
             <el-option label="市级" :value="2"></el-option>
             <el-option label="区级" :value="3"></el-option>
@@ -27,23 +26,24 @@
             <el-option v-for="item of roles" :label="item.name" :value="item.id" :key="item.id"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="区域" prop="areaId">
+        <el-form-item v-if="formData.agentType!==0" label="区域" prop="areaId">
           <el-cascader v-model="formData.area" :options="area"></el-cascader>
         </el-form-item>
         <el-form-item label="生日" prop="birthday">
           <el-date-picker v-model="formData.birthday" placeholder="选择生日"></el-date-picker>
         </el-form-item>
         <el-form-item label="年龄" prop="age">
-          <el-input type="text" v-model="formData.age" autocomplete="off"></el-input>
+          <el-input type="text" v-model="formData.age" maxlength="2" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="入职日期" prop="entryTime">
           <el-date-picker v-model="formData.entryTime" placeholder="选择日期"></el-date-picker>
         </el-form-item>
         <el-form-item label="用户名" prop="username">
-          <el-input type="text" v-model="formData.username" autocomplete="off"></el-input>
+          <el-input type="text" v-model="formData.username" maxlength="20" autocomplete="off"
+                    :disabled="Boolean(formData.id)"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input type="text" v-model="formData.password" autocomplete="off"></el-input>
+          <el-input type="password" v-model="formData.password" maxlength="20" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="状态" prop="state">
           <el-select v-model="formData.state">
@@ -52,7 +52,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remarks">
-          <el-input type="textarea" v-model="formData.remarks" autocomplete="off"></el-input>
+          <el-input type="textarea" v-model="formData.remarks" maxlength="20" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -73,7 +73,8 @@
           <el-button type="primary" @click="reset()">重置</el-button>
         </el-form-item>
       </el-form>
-      <el-button type="primary" size="small" round @click="dialogFormVisible=true">新建</el-button>
+      <el-button type="primary" size="small" round @click="openDialog">新建区域经理</el-button>
+      <el-button type="primary" size="small" round @click="openDialog(0)">新建普通用户</el-button>
     </div>
     <el-table :data="tableData" style="width: 100%" v-loading="loading">
       <el-table-column prop="id" label="编号"></el-table-column>
@@ -141,8 +142,13 @@
         this.searchForm = {}
         this.fetch()
       },
+      openDialog(agentType) {
+        if (agentType===0) {
+          this.formData = {agentType}
+        }
+        this.dialogFormVisible = true
+      },
       handleEdit(row) {
-        delete row.password
         let area = [row.userProvinceId + '', row.userCityId + '', row.areaId + '']
         this.formData = {...JSON.parse(JSON.stringify(row)), area}
         this.dialogFormVisible = true

@@ -7,7 +7,11 @@
 </template>
 
 <style lang="scss">
-  .flex{display: flex;display:-webkit-flex;justify-content: space-between;flex-wrap: wrap}
+  .flex {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap
+  }
 
   html, body, #app {
     height: 100%;
@@ -23,7 +27,13 @@
   }
 
   .el-form .el-input__inner, .el-form .el-textarea__inner {
-    width: 202px;
+    width: 220px;
+  }
+
+  .num {
+    input {
+      width: 180px!important;
+    }
   }
 
   input[type=number]::-webkit-outer-spin-button,

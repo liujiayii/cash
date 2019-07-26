@@ -19,8 +19,7 @@ const res = response => {
   if (response.data.code === -2) {
     window.$Vue.$router.push({path: '/login'})
     window.$Vue.$message.error(response.data.msg)
-  }
-  else if (response.data.code !== 1&&response.data.code !== -1) {
+  } else if (response.data.code !== 1) {
     window.$Vue.$message.error(response.data.msg)
   }
   return response;

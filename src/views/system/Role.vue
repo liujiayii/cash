@@ -3,7 +3,7 @@
     <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body>
       <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
         <el-form-item label="名称" prop="name">
-          <el-input type="text" v-model="formData.name" autocomplete="off"></el-input>
+          <el-input type="text" v-model="formData.name" maxlength="20" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -12,18 +12,27 @@
       </div>
     </el-dialog>
     <el-dialog :visible.sync="dialogFormVisible2" :modal-append-to-body="false">
-      <div v-for="item of accessList" :key="item.parentIds">
-        <el-divider content-position="left">
-          <el-checkbox-group v-model="selectAccess.ids">
-            <el-checkbox :label="item.parentIds">{{item.parent_names}}</el-checkbox>
-          </el-checkbox-group>
-        </el-divider>
-        <el-checkbox-group v-model="selectAccess.ids">
-          <el-checkbox v-for="item_c of item.permissions" :key="item_c.id" :label="item_c.id">
-            {{item_c.name}}
-          </el-checkbox>
-        </el-checkbox-group>
-      </div>
+      <el-tree
+        :data="accessList"
+        show-checkbox
+        default-expand-all
+        node-key="id"
+        ref="tree"
+        highlight-current
+        :props="{ children: 'children', label: 'name'}">
+      </el-tree>
+      <!-- <div v-for="item of accessList" :key="item.parentIds">
+         <el-divider content-position="left">
+           <el-checkbox-group v-model="selectAccess.ids">
+             <el-checkbox :label="item.parentIds">{{item.parent_names}}</el-checkbox>
+           </el-checkbox-group>
+         </el-divider>
+         <el-checkbox-group v-model="selectAccess.ids">
+           <el-checkbox v-for="item_c of item.permissions" :key="item_c.id" :label="item_c.id">
+             {{item_c.name}}
+           </el-checkbox>
+         </el-checkbox-group>
+       </div>-->
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible2 = false">取 消</el-button>
         <el-button type="primary" @click="submit2">确 定</el-button>
@@ -36,7 +45,8 @@
         </el-form-item>
         <el-form-item>
           <el-select v-model="searchForm.shopId">
-            <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId" placeholder="选择店铺"></el-option>
+            <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId"
+                       placeholder="选择店铺"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -104,8 +114,11 @@
         this.$ajax.post('/listRolePermissions.action', {roleId: row.id})
           .then((res) => {
             if (res.data.code === 1) {
-              this.selectAccess = {ids: res.data.data, id: row.id}
               this.dialogFormVisible2 = true
+              this.$nextTick(() => {
+                this.$refs.tree.setCheckedKeys([...res.data.data]);
+                this.selectAccess = {id: row.id}
+              })
             }
           })
       },
@@ -127,7 +140,7 @@
       },
       submit2() {
         this.$ajax.post('/updateOneRolePermission.action', {
-          id: this.selectAccess.id, ids: this.selectAccess.ids.join(','),
+          id: this.selectAccess.id, ids: this.$refs.tree.getCheckedKeys().join(','),
         }).then((res) => {
           if (res.data.code === 1) {
             this.dialogFormVisible2 = false

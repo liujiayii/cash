@@ -3,7 +3,7 @@
     <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body>
       <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
         <el-form-item label="姓名" prop="name">
-          <el-input type="text" v-model="formData.name" autocomplete="off"></el-input>
+          <el-input type="text" v-model="formData.name" maxlength="20" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="手机号" prop="phone">
           <el-input type="text" v-model="formData.phone" autocomplete="off" maxlength="11"></el-input>

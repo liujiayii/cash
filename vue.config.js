@@ -1,6 +1,7 @@
 let externals = {
   'vue': 'Vue',
   'vue-router': 'VueRouter',
+  'vuex': 'Vuex',
   'axios': 'axios',
   'vue-i18n': 'VueI18n',
   'nprogress': 'NProgress',
@@ -18,7 +19,8 @@ const cdn = {
     'https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js',
     'https://cdn.jsdelivr.net/npm/vue-i18n@8/dist/vue-i18n.min.js',
     'https://cdn.jsdelivr.net/npm/screenfull@4/dist/screenfull.min.js',
-    'https://cdn.jsdelivr.net/npm/@antv/g2@3/dist/g2.min.js'
+    'https://cdn.jsdelivr.net/npm/@antv/g2@3/dist/g2.min.js',
+    'https://cdn.jsdelivr.net/npm/vuex@3/dist/vuex.min.js'
   ]
 }
 
@@ -34,7 +36,7 @@ module.exports = {
     port: 8081,
     proxy: {
       '/': {
-        target: 'http://192.168.1.135:8080/',
+        target: 'http://192.168.1.104:8080/',
         changeOrigin: true,
         pathRewrite: {
           '^/': ''

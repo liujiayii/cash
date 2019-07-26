@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog :visible.sync="dialogFormVisible" @closed="closeForm" append-to-body fullscreen>
-      <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
+      <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px" class="num">
         <el-form-item label="货流类型" prop="goodstrafficState">
           <el-select v-model="formData.goodstrafficState">
             <el-option label="采购" :value="1"></el-option>
@@ -25,7 +25,7 @@
         <div v-for="item of goodsList" :key="item.productTypeId">
           <el-divider content-position="left">{{item.productTypeName}}</el-divider>
           <el-form-item v-for="item_c of item.product" :label="item_c.name" :key="item_c.id">
-            <el-input type="number" v-model="goodsCount[item_c.id]" autocomplete="off"></el-input>
+            <el-input-number v-model="goodsCount[item_c.id]" controls-position="right" :min="0"></el-input-number>
           </el-form-item>
         </div>
       </el-form>
@@ -202,6 +202,6 @@
   }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 
 </style>

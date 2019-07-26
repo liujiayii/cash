@@ -68,6 +68,11 @@
               .then((res) => {
                 if (res.data.code === 1) {
                   window.sessionStorage.setItem('userName', this.form.username)
+                  let permission = []
+                  for (let i = 0; i < res.data.PermissionVolist.length; i++) {
+                    permission.push(res.data.PermissionVolist[i].id)
+                  }
+                  window.sessionStorage.setItem('permission', JSON.stringify(permission))
                   this.$router.push({path: '/Home'})
                 }
               })
