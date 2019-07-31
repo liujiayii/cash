@@ -22,10 +22,24 @@
       </el-table>
       <div slot="footer" class="dialog-footer">
         <template v-if="showIndex.transportationState===1">
+          <el-button type="success" @click="changeState()">转 移</el-button>
           <el-button type="success" @click="changeState(2)">通 过</el-button>
           <el-button type="danger" @click="changeState(4)">拒 绝</el-button>
         </template>
         <el-button type="primary" @click="dialogFormVisible2 = false">确 定</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog :visible.sync="dialogFormVisible" append-to-body>
+      <el-form :model="formData" :inline="true" label-width="120px">
+        <el-form-item label="店铺" prop="receivingShopId">
+          <el-select v-model="formData.receivingShopId">
+            <el-option v-for="item of mallList" :label="item.name" :value="item.id" :key="item.id"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submit">确 定</el-button>
       </div>
     </el-dialog>
     <el-table :data="tableData" style="width: 100%" v-loading="loading">
@@ -34,6 +48,7 @@
       <el-table-column prop="totalMoney" label="总金额"></el-table-column>
       <el-table-column prop="serialNumber" label="流水号"></el-table-column>
       <el-table-column prop="deliveryDate" label="送货日期"></el-table-column>
+      <el-table-column prop="orderDate" label="订单日期"></el-table-column>
       <el-table-column prop="transportationState" label="状态">
         <template slot-scope="scope">
           <span>{{scope.row.transportationState===1?'未审批':scope.row.transportationState===2?'备货中':scope.row.transportationState===3?'已出库':scope.row.transportationState===4?'已拒绝':scope.row.transportationState===5?'已入库':'已取消'}}</span>
@@ -70,9 +85,12 @@
         pagination: {},
         loading: false,
         searchForm: {},
+        dialogFormVisible: false,
         dialogFormVisible2: false,
         tableData2: [],
-        showIndex: {}
+        showIndex: {},
+        mallList: [],
+        formData: {}
       }
     },
     methods: {
@@ -95,22 +113,31 @@
           })
       },
       changeState(transportationState) {
-        this.$confirm('是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.$ajax.post('/updateSubscribe.action', {id: this.showIndex.id, transportationState})
-            .then((res) => {
-              if (res.data.code === 1) {
-                this.$message.success(res.data.msg)
-                this.dialogFormVisible2 = false
-                this.fetch(this.pagination.current)
-              }
-            })
-        }).catch(() => {
-          this.$message.info('已取消');
-        });
+        if (transportationState) {
+          this.$confirm('是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$ajax.post('/updateSubscribe.action', {id: this.showIndex.id, transportationState})
+              .then((res) => {
+                if (res.data.code === 1) {
+                  this.$message.success(res.data.msg)
+                  this.dialogFormVisible2 = false
+                  this.fetch(this.pagination.current)
+                }
+              })
+          }).catch(() => {
+            this.$message.info('已取消');
+          })
+        } else {
+          console.log('aaaa')
+          this.dialogFormVisible2 = false
+          this.$nextTick(() => {
+            this.dialogFormVisible = true
+            this.formData = {id: this.showIndex.id}
+          })
+        }
       },
       handleClick(row) {
         this.$confirm('是否出库?', '提示', {
@@ -152,9 +179,32 @@
             }
           })
       },
+      getMall() {
+        this.$ajax.post('/listShopIdAndName.action')
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.mallList = res.data.data
+            }
+          })
+      },
+      submit() {
+        if (this.formData.receivingShopId === this.showIndex.shipmentsShopId) {
+          this.$message.error('不能转移至本店')
+        } else {
+          this.$ajax.post('redirectToBranchShop.action', this.formData)
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.dialogFormVisible = false
+                this.$message.success(res.data.msg)
+                this.fetch(this.pagination.current)
+              }
+            })
+        }
+      }
     },
     mounted() {
       this.fetch()
+      this.getMall()
     }
   }
 </script>

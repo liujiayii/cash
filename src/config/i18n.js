@@ -39,6 +39,7 @@ const en_US = {
     Member: 'Member',
     Role: 'Role',
     User: 'User',
+    Access: 'Access'
   },
 }
 
@@ -80,6 +81,7 @@ const zh_CN = {
     Member: '会员管理',
     Role: '角色管理',
     User: '用户管理',
+    Access: '权限管理'
   },
 }
 

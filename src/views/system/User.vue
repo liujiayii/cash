@@ -15,19 +15,25 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="formData.agentType!==0" label="区域经理" prop="agentType">
-          <el-select v-model="formData.agentType">
+          <el-select v-model="formData.agentType" @change="selectArea">
             <el-option label="省级" :value="1"></el-option>
             <el-option label="市级" :value="2"></el-option>
             <el-option label="区级" :value="3"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="角色" prop="roleId">
+        <!--<el-form-item label="角色" prop="roleId">
           <el-select v-model="formData.roleId">
             <el-option v-for="item of roles" :label="item.name" :value="item.id" :key="item.id"></el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item>-->
         <el-form-item v-if="formData.agentType!==0" label="区域" prop="areaId">
-          <el-cascader v-model="formData.area" :options="area"></el-cascader>
+          <el-cascader v-model="formData.area" :options="area" @change="selectArea"></el-cascader>
+        </el-form-item>
+        <el-form-item v-if="formData.agentType&&formData.area" label="店铺" prop="shopId">
+          <el-select v-model="formData.shopId">
+            <el-option v-for="item of selectMall" :key="item.id" :label="item.name" :value="item.id"
+                       placeholder="选择店铺"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="生日" prop="birthday">
           <el-date-picker v-model="formData.birthday" placeholder="选择生日"></el-date-picker>
@@ -63,14 +69,10 @@
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item>
-          <el-select v-model="searchForm.shopId">
-            <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId"
-                       placeholder="选择店铺"></el-option>
+          <el-select v-model="searchForm.userType" @change="fetch()">
+            <el-option label="本店用户" :value="4"></el-option>
+            <el-option label="分店区域经理" :value="5"></el-option>
           </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="fetch()">查询</el-button>
-          <el-button type="primary" @click="reset()">重置</el-button>
         </el-form-item>
       </el-form>
       <el-button type="primary" size="small" round @click="openDialog">新建区域经理</el-button>
@@ -80,6 +82,14 @@
       <el-table-column prop="id" label="编号"></el-table-column>
       <el-table-column prop="name" label="姓名"></el-table-column>
       <el-table-column prop="phone" label="电话"></el-table-column>
+      <el-table-column prop="age" label="年龄"></el-table-column>
+      <el-table-column prop="entryTime" label="入职日期">
+        <template slot-scope="scope"><span>{{formatDate(new Date(scope.row.entryTime),'yyyy-MM-dd')}}</span></template>
+      </el-table-column>
+      <el-table-column prop="birthday" label="员工生日">
+        <template slot-scope="scope"><span>{{formatDate(new Date(scope.row.birthday),'yyyy-MM-dd')}}</span></template>
+      </el-table-column>
+      <el-table-column prop="remarks" label="备注"></el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
@@ -116,7 +126,7 @@
         pagination: {},
         loading: false,
         area,
-        searchForm: {},
+        searchForm: {userType: 4},
         dialogFormVisible: false,
         formData: {},
         rules: {
@@ -134,16 +144,31 @@
           state: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
         roles: [],
-        mallList: JSON.parse(sessionStorage.getItem('mall'))
+        mallList: [],
+        selectMall: []
       }
     },
     methods: {
+      selectArea() {
+        if (this.formData.area && this.formData.agentType) {
+          this.$ajax.post('/listShopIdAndNameForManager.action', {
+            agentType: this.formData.agentType,
+            userProvinceId: this.formData.area[0],
+            userCityId: this.formData.agentType > 1 ? this.formData.area[1] : '',
+            areaId: this.formData.agentType > 2 ? this.formData.area[2] : ''
+          }).then((res) => {
+            if (res.data.code === 1) {
+              this.selectMall = res.data.data
+            }
+          })
+        }
+      },
       reset() {
         this.searchForm = {}
         this.fetch()
       },
       openDialog(agentType) {
-        if (agentType===0) {
+        if (agentType === 0) {
           this.formData = {agentType}
         }
         this.dialogFormVisible = true
@@ -220,11 +245,20 @@
               this.roles = res.data.data
             }
           })
-      }
+      },
+      getAllMall() {
+        this.$ajax.post('/listAgentShop.action', {page: 1, limit: 100})
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.mallList = res.data.data
+            }
+          })
+      },
     },
     mounted() {
       this.fetch()
       this.getRole()
+      this.getAllMall()
     }
   }
 </script>

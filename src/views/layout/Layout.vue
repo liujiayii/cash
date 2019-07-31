@@ -63,9 +63,7 @@
           <el-main :style="{background: '#fff',margin:' 0 20px'}">
             <transition name="main" mode="out-in" enter-active-class="animated fadeIn"
                         leave-active-class="animated fadeOut" :duration="200">
-              <keep-alive :max="10">
-                <router-view/>
-              </keep-alive>
+              <router-view/>
             </transition>
           </el-main>
           <el-footer :style="{background:'rgb(247,243,235)'}">Copyright © 2019 由 石家庄智莱云信息技术有限公司 强力驱动</el-footer>
@@ -77,7 +75,7 @@
 
 <script>
   import screenfull from 'screenfull'
-  import {menuData} from "../../router";
+  import {menuData} from "@/router";
 
   export default {
     name: "Layout",
@@ -91,42 +89,9 @@
     mounted() {
       this.getTimes()
       this.getAllAccess()
-      this.getAllMall()
-      this.getAllProductType()
-      this.getAllGoods()
       this.$store.commit('changePermission', JSON.parse(sessionStorage.getItem('permission')))
     },
     methods: {
-      getAllGoods() {
-        if (!sessionStorage.getItem('goods')) {
-          this.$ajax.post('/listProductAndProductType.action')
-            .then((res) => {
-              if (res.data.code === 1) {
-                sessionStorage.setItem('goods', JSON.stringify(res.data.data))
-              }
-            })
-        }
-      },
-      getAllProductType() {
-        if (!sessionStorage.getItem('product')) {
-          this.$ajax.post('/listProductType.action', {page: 1, limit: 100})
-            .then((res) => {
-              if (res.data.code === 1) {
-                sessionStorage.setItem('product', JSON.stringify(res.data.listProductType))
-              }
-            })
-        }
-      },
-      getAllMall() {
-        if (!sessionStorage.getItem('mall')) {
-          this.$ajax.post('/listAgentShop.action', {page: 1, limit: 100})
-            .then((res) => {
-              if (res.data.code === 1) {
-                sessionStorage.setItem('mall', JSON.stringify(res.data.data))
-              }
-            })
-        }
-      },
       getAllAccess() {
         if (!sessionStorage.getItem('access')) {
           this.$ajax.post('/listAllPermissions.action')

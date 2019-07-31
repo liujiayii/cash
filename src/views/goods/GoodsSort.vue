@@ -3,9 +3,9 @@
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item label="商品分类">
-          <el-input placeholder="请输入商品分类" clearable v-model="searchForm.name"></el-input>
+          <el-input placeholder="请输入商品分类" clearable v-model="searchForm.productTypeName"></el-input>
         </el-form-item>
-        <el-button type="primary" size="small" round @click="fetch">搜索</el-button>
+        <el-button type="primary" size="small" @click="fetch()">搜索</el-button>
       </el-form>
       <el-button type="primary" size="small" round @click="dialogFormVisible = true">添加</el-button>
     </div>
@@ -48,7 +48,7 @@
     name: "GoodsSort",
     data() {
       return {
-        searchForm: {name: ""},
+        searchForm: {},
         loading: false,
         pagination: {},
         tableData: [],
@@ -59,12 +59,12 @@
     methods: {
       fetch(page) {
         this.$ajax.post("/dimOrSelectAllproducts.action", {
-            productTypeName: this.searchForm.name || '',
+            ...this.searchForm,
             page: page || 1,
             limit: 10
           }
         ).then(res => {
-          if (res.data.code === 1 && res.data.count !== 0) {
+          if (res.data.code === 1) {
             const pagination = {...this.pagination};
             pagination.total = res.data.count
             pagination.current = page;
@@ -77,12 +77,14 @@
       addClass(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.$ajax.post(this.form.id ? "createProductType.action" : "addProductType.action", {...this.form}
-            ).then(res => {
+            this.$ajax.post(this.form.id ? "createProductType.action" : "addProductType.action", {
+              id: this.form.id || '',
+              productTypeName: this.form.productTypeName
+            }).then(res => {
               if (res.data.code === 1) {
-                this.$message.success(res.data.msg);
-                this.seachs(this.pagination.current)
                 this.dialogFormVisible = false
+                this.$message.success(res.data.msg);
+                this.fetch(this.pagination.current)
               }
             })
             return false;
@@ -103,7 +105,7 @@
             .then((res) => {
               if (res.data.code === 1) {
                 this.$message.success(res.data.msg);
-                this.seachs(this.pagination.current)
+                this.fetch(this.pagination.current)
               }
             })
         }).catch(() => {

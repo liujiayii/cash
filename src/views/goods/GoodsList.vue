@@ -5,12 +5,6 @@
         <el-form-item label="商品名称">
           <el-input placeholder="商品名称" clearable v-model="searchForm.phone" @blur="seachs()"></el-input>
         </el-form-item>
-        <el-form-item label="店铺">
-          <el-select v-model="searchForm.shop" placeholder="请选择店铺" clearable @change="seachs()">
-            <el-option v-for="item in shopId" :key="item.value" :label="item.label"
-                       :value="item.value"></el-option>
-          </el-select>
-        </el-form-item>
         <el-form-item label="商品种类">
           <el-select v-model="searchForm.productTypeId" placeholder="请选择商品种类" @change="seachs()" clearable>
             <el-option v-for="item in productTypeId" :key="item.value" :label="item.label"
@@ -19,27 +13,27 @@
         </el-form-item>
       </el-form>
     </div>
-    <span class="add" @click="addGoods">添加+</span>
+    <el-button type="primary" size="small" round @click="addGoods">添加+</el-button>
     <el-table v-loading="loading" :data="tableData" style="width: 100%">
-      <el-table-column prop="name" label="商品名称" width="160"></el-table-column>
-      <el-table-column prop="barCode" label="商品条码" width="160"></el-table-column>
-      <el-table-column prop="image" label="商品图片" width="160">
+      <el-table-column prop="name" label="商品名称"></el-table-column>
+      <el-table-column prop="barCode" label="商品条码"></el-table-column>
+      <el-table-column prop="image" label="商品图片">
         <template slot-scope="scope">
           <img :src="scope.row.image" alt="" class="imgs">
         </template>
       </el-table-column>
-      <el-table-column prop="pleased" label="进货价" width="160"></el-table-column>
-      <el-table-column prop="salePrice" label="销售价" width="160"></el-table-column>
-      <el-table-column prop="memberPrice" label="会员价" width="160"></el-table-column>
-      <el-table-column prop="specification" label="规格" width="160"></el-table-column>
-      <el-table-column prop="color" label="颜色" width="160"></el-table-column>
-      <el-table-column prop="state" label="是否上架" width="200">
+      <el-table-column prop="pleased" label="进货价"></el-table-column>
+      <el-table-column prop="salePrice" label="销售价"></el-table-column>
+      <el-table-column prop="memberPrice" label="会员价"></el-table-column>
+      <el-table-column prop="specification" label="规格"></el-table-column>
+      <el-table-column prop="color" label="颜色"></el-table-column>
+      <el-table-column prop="state" label="是否上架">
         <template slot-scope="scope">
           <el-switch v-model="scope.row.state==1?true:false" @change="changState(scope.$index, scope.row)"
-                     class="switchs" active-text="已上架" inactive-text="未上架"></el-switch>
+                     class="switchs" active-text="上架" inactive-text="下架"></el-switch>
         </template>
       </el-table-column>
-      <el-table-column prop="productType" label="商品种类" width="160"></el-table-column>
+      <el-table-column prop="productType" label="商品种类"></el-table-column>
       <el-table-column label="操作" fixed="right" width="250">
         <template slot-scope="scope">
           <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
@@ -69,11 +63,7 @@
         </el-form-item>
 
         <el-form-item label="商品状态" :rules="[ { required: true, message: '商品状态不能为空'}] ">
-          <el-switch
-            v-model="form.state"
-            active-text="已上架"
-            inactive-text="未上架"
-            @change="status()">
+          <el-switch v-model="form.state" active-text="已上架" inactive-text="未上架">
           </el-switch>
         </el-form-item>
         <el-form-item label="商品分类" :rules="[ { required: true, message: '商品分类不能为空'}] ">
@@ -191,12 +181,6 @@
           document.getElementById('imgewm').src = "/missionCreateCodeImage.action?number=" + row.barCode;
           console.log(document.getElementById('imgewm').src)
         })
-        // this.$ajax.post("missionCreateCodeImage.action", {
-        //   number:row.barCode
-        //   }
-        // ).then(res => {
-        //
-        // })
       },
       //模糊查询
       seachs(num) {
@@ -234,24 +218,6 @@
           }
         })
       },
-      // getList(num){
-      //   this.loading = true
-      //   this.$ajax.post("getProductByCondition.action", {
-      //     page:1||num,
-      //     limit:10
-      //     }
-      //   ).then(res => {
-      //     if (res.data.code === 1) {
-      //       const pagination = {...this.pagination};
-      //       pagination.total = res.data.count
-      //       pagination.current = num;
-      //       this.loading = false;
-      //       this.tableData=res.data.listProduct
-      //       this.pagination = pagination;
-      //     }
-      //
-      //   })
-      // },
       //商品分类
       getClassList() {
         this.$ajax.post("listProductType.action", {}
@@ -263,8 +229,6 @@
             this.productTypeId.push(jsons)
           }
         })
-      },
-      status(typ) {
       },
       //添加商品
       addCommodity() {
@@ -358,19 +322,6 @@
 </script>
 
 <style scoped>
-  .add {
-    float: right;
-    margin: 0 15px 5px 0;
-    cursor: pointer;
-    position: relative;
-    bottom: 10px;
-    border-radius: 18px;
-    height: 35px;
-    line-height: 40px;
-    padding: 0 15px;
-    font-size: 14px
-  }
-
   .el-tag + .el-tag {
     margin-left: 10px;
   }

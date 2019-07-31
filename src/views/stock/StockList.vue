@@ -3,10 +3,10 @@
     <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body>
       <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
         <el-form-item label="库存预警" prop="inventoryWarning">
-          <el-input type="text" v-model="formData.inventoryWarning" autocomplete="off"></el-input>
+          <el-input type="number" v-model="formData.inventoryWarning" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="库存" prop="quantity">
-          <el-input type="text" v-model="formData.quantity" autocomplete="off"></el-input>
+          <el-input type="number" v-model="formData.quantity" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -18,12 +18,14 @@
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item>
           <el-select v-model="searchForm.shopId">
-            <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId" placeholder="选择店铺"></el-option>
+            <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId"
+                       placeholder="选择店铺"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
           <el-select v-model="searchForm.productTypeId">
-            <el-option v-for="item of productType" :key="item.id" :label="item.productTypeName" :value="item.id" placeholder="按商品分类查询"></el-option>
+            <el-option v-for="item of productType" :key="item.id" :label="item.productTypeName" :value="item.id"
+                       placeholder="按商品分类查询"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -67,8 +69,8 @@
           inventoryWarning: [{required: true, message: '请输入内容', trigger: 'blur'}],
           quantity: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
-        mallList: JSON.parse(sessionStorage.getItem('mall')),
-        productType: JSON.parse(sessionStorage.getItem('product'))
+        mallList: [],
+        productType: []
       }
     },
     methods: {
@@ -88,12 +90,12 @@
               inventoryWarning: this.formData.inventoryWarning,
               quantity: this.formData.quantity
             }).then((res) => {
-                if (res.data.code === 1) {
-                  this.dialogFormVisible = false
-                  this.$message.success(res.data.msg);
-                  this.fetch(this.pagination.current)
-                }
-              })
+              if (res.data.code === 1) {
+                this.dialogFormVisible = false
+                this.$message.success(res.data.msg);
+                this.fetch(this.pagination.current)
+              }
+            })
             return false;
           }
         });
@@ -112,9 +114,27 @@
             }
           })
       },
+      getAllProductType() {
+        this.$ajax.post('/listProductType.action', {page: 1, limit: 100})
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.productType = res.data.listProductType
+            }
+          })
+      },
+      getAllMall() {
+        this.$ajax.post('/listAgentShop.action', {page: 1, limit: 100})
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.mallList = res.data.data
+            }
+          })
+      },
     },
     mounted() {
       this.fetch()
+      this.getAllProductType()
+      this.getAllMall()
     }
   }
 </script>

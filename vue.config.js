@@ -36,8 +36,10 @@ module.exports = {
     port: 8081,
     proxy: {
       '/': {
-        target: 'http://192.168.1.104:8080/',
+        target: 'http://192.168.1.194:8080/',
+        //target: 'http://192.168.1.135:8080/',
         changeOrigin: true,
+        ws: false, //值为false防止控制台报错★★★★★★★★
         pathRewrite: {
           '^/': ''
         }

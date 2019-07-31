@@ -1,28 +1,14 @@
 <template>
   <div>
     <el-dialog :visible.sync="dialogFormVisible" @closed="closeForm" append-to-body fullscreen>
-      <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px" class="num">
-        <el-form-item label="货流类型" prop="goodstrafficState">
-          <el-select v-model="formData.goodstrafficState">
-            <el-option label="采购" :value="1"></el-option>
-            <el-option label="调拨" :value="2"></el-option>
-          </el-select>
-        </el-form-item>
+      <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">
         <el-form-item label="送货日期" prop="deliveryDate">
           <el-date-picker v-model="formData.deliveryDate" type="date" placeholder="选择日期"></el-date-picker>
         </el-form-item>
-        <template v-if="formData.goodstrafficState===2">
-          <el-form-item label="送货店铺">
-            <el-select v-model="formData.receivingShopId">
-              <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId"
-                         placeholder="选择店铺"></el-option>
-            </el-select>
-          </el-form-item>
-        </template>
         <el-form-item label="备注">
           <el-input type="text" v-model="formData.remark" autocomplete="off"></el-input>
         </el-form-item>
-        <div v-for="item of goodsList" :key="item.productTypeId">
+        <div v-for="item of goodsList" :key="item.productTypeId" class="num">
           <el-divider content-position="left">{{item.productTypeName}}</el-divider>
           <el-form-item v-for="item_c of item.product" :label="item_c.name" :key="item_c.id">
             <el-input-number v-model="goodsCount[item_c.id]" controls-position="right" :min="0"></el-input-number>
@@ -104,16 +90,14 @@
         dialogFormVisible: false,
         formData: {},
         rules: {
-          goodstrafficState: [{required: true, message: '请输入内容', trigger: 'blur'}],
           birthday: [{required: true, message: '请输入内容', trigger: 'blur'}],
           deliveryDate: [{required: true, message: '请输入内容', trigger: 'blur'}],
           name: [{required: true, message: '请输入内容', trigger: 'blur'}]
         },
-        goodsList: JSON.parse(sessionStorage.getItem('goods')),
+        goodsList: [],
         goodsCount: {},
         dialogFormVisible2: false,
-        tableData2: [],
-        mallList: JSON.parse(sessionStorage.getItem('mall'))
+        tableData2: []
       }
     },
     methods: {
@@ -135,11 +119,19 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.$ajax.post('/updateSubscribe.action', {id: row.id, transportationState: 6})
+          this.$ajax.post('/listGoodstrafficOrdersProduct.action', {id: row.id})
             .then((res) => {
               if (res.data.code === 1) {
-                this.$message.success(res.data.msg)
-                this.fetch(this.pagination.current)
+                this.$ajax.post('/updateSubscribeForPurchasing.action', {
+                  id: row.id,
+                  transportationState: 6,
+                  g: JSON.stringify(res.data.data)
+                }).then((res) => {
+                  if (res.data.code === 1) {
+                    this.$message.success(res.data.msg)
+                    this.fetch(this.pagination.current)
+                  }
+                })
               }
             })
         }).catch(() => {
@@ -160,13 +152,16 @@
           if (valid) {
             let cacheArr = []
             for (let i in this.goodsCount) {
-              cacheArr.push({
-                productId: i,
-                quantity: this.goodsCount[i]
-              })
+              if (this.goodsCount[i] > 0) {
+                cacheArr.push({
+                  productId: i,
+                  quantity: this.goodsCount[i]
+                })
+              }
             }
             this.$ajax.post(this.formData.id ? '' : '/addprocurement.action', {
               ...this.formData,
+              goodstrafficState: 1,
               deliveryDate: this.formatDate(this.formData.deliveryDate, 'yyyy-MM-dd hh:mm:ss'),
               time: this.formatDate(this.formData.deliveryDate, 'yyyy-MM-dd hh:mm:ss'),
               g: JSON.stringify(cacheArr)
@@ -195,9 +190,18 @@
             }
           })
       },
+      getAllGoods() {
+        this.$ajax.post('/listProductAndProductType.action')
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.goodsList = res.data.data
+            }
+          })
+      },
     },
     mounted() {
       this.fetch()
+      this.getAllGoods()
     }
   }
 </script>

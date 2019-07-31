@@ -1,6 +1,69 @@
-import router from './router'
+import Vue from 'vue'
+import VueRouter from 'vue-router'
 import NProgress from 'nprogress'
-import {constantRouterComponents} from './router'
+
+Vue.use(VueRouter)
+
+const router = new VueRouter({
+  routes: [{
+    path: '/',
+    redirect: '/login'
+  },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/login/Login')
+    }, {
+      path: '',
+      component: () => import('@/views/layout/Layout'),
+      children: [
+        {
+          component: () => import('@/views/exception/404'),
+          name: "404",
+          path: "/404",
+        }, {
+          component: () => import('@/views/exception/403'),
+          name: "403",
+          path: "/403",
+        }, {
+          component: () => import('@/views/exception/500'),
+          name: "500",
+          path: "/500",
+        }
+      ]
+    }, {
+      path: '*',
+      redirect: '/404'
+    }]
+})
+// 前端路由表
+const constantRouterComponents = {
+  Layout: () => import('@/views/layout/Layout'),
+  // 你需要动态引入的页面组件
+  Home: () => import('@/views/home/Home'),
+  /*优惠管理*/
+  DiscountList: () => import('@/views/discount/DiscountList'),
+  /*财务*/
+  Order: () => import('@/views/finance/Order'),
+  /*商品*/
+  GoodsList: () => import('@/views/goods/GoodsList'),
+  GoodsSort: () => import('@/views/goods/GoodsSort'),
+  /*记录*/
+  Operation: () => import('@/views/record/Operation'),
+  Daily: () => import('@/views/record/Daily'),
+  Monthly: () => import('@/views/record/Monthly'),
+  /*库存*/
+  StockList: () => import('@/views/stock/StockList'),
+  Purchase: () => import('@/views/stock/Purchase'),
+  SelfApply: () => import('@/views/stock/SelfApply'),
+  OthersApply: () => import('@/views/stock/OthersApply'),
+  /*设置*/
+  Mall: () => import('@/views/system/Mall'),
+  Member: () => import('@/views/system/Member'),
+  Role: () => import('@/views/system/Role'),
+  User: () => import('@/views/system/User'),
+  Access: () => import('@/views/system/Access'),
+}
 /* 格式化后端结构信息并递归生成层级路由表 */
 const generator = (routerMap, parent) => {
   return routerMap.map(item => {
@@ -42,7 +105,8 @@ const menuData = [
       {name: "Mall"},
       {name: "Member"},
       {name: "Role"},
-      {name: "User"}
+      {name: "User"},
+      {name: "Access"}
     ]
   },
   {
@@ -98,10 +162,7 @@ router.beforeEach((to, form, next) => {
   if (!window.sessionStorage.getItem('userName') && to.path !== '/login') {
     return next({path: '/login'})
   } else if (reAddRoutes) {
-    const menu = JSON.parse(window.sessionStorage.getItem('menu')) || []
     reAddRoutes = false
-    console.log([...menuData])
-    console.log(generator([...menuData]))
     router.addRoutes(generator([...menuData]))
     next({path: window.sessionStorage.getItem('path'), query: JSON.parse(window.sessionStorage.getItem('query'))})
   } else {
@@ -112,4 +173,4 @@ router.afterEach(() => {
   NProgress.done()
 })
 
-export {router, generator,menuData}
+export {menuData, router}

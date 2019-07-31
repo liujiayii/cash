@@ -21,18 +21,6 @@
         highlight-current
         :props="{ children: 'children', label: 'name'}">
       </el-tree>
-      <!-- <div v-for="item of accessList" :key="item.parentIds">
-         <el-divider content-position="left">
-           <el-checkbox-group v-model="selectAccess.ids">
-             <el-checkbox :label="item.parentIds">{{item.parent_names}}</el-checkbox>
-           </el-checkbox-group>
-         </el-divider>
-         <el-checkbox-group v-model="selectAccess.ids">
-           <el-checkbox v-for="item_c of item.permissions" :key="item_c.id" :label="item_c.id">
-             {{item_c.name}}
-           </el-checkbox>
-         </el-checkbox-group>
-       </div>-->
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible2 = false">取 消</el-button>
         <el-button type="primary" @click="submit2">确 定</el-button>
@@ -98,7 +86,7 @@
         dialogFormVisible2: false,
         accessList: JSON.parse(sessionStorage.getItem('access')),
         selectAccess: {ids: [], id: null},
-        mallList: JSON.parse(sessionStorage.getItem('mall'))
+        mallList: []
       }
     },
     methods: {
@@ -178,10 +166,19 @@
         }).catch(() => {
           this.$message.info('已取消');
         });
-      }
+      },
+      getAllMall() {
+        this.$ajax.post('/listAgentShop.action', {page: 1, limit: 100})
+          .then((res) => {
+            if (res.data.code === 1) {
+              this.mallList = res.data.data
+            }
+          })
+      },
     },
     mounted() {
       this.fetch()
+      this.getAllMall()
     }
   }
 </script>
