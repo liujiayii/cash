@@ -205,18 +205,20 @@
         });
       },
       fetch(page) {
-        this.loading = true
-        this.$ajax.post('/listShipmentsShopName.action', {limit: 10, page: page || 1, ...this.searchForm})
-          .then((res) => {
-            if (res.data.code === 1) {
-              const pagination = {...this.pagination};
-              pagination.total = res.data.count
-              pagination.current = page;
-              this.loading = false;
-              this.tableData = res.data.data;
-              this.pagination = pagination;
-            }
-          })
+        if (this.$store.state.permission.indexOf(20102) !== -1) {
+          this.loading = true
+          this.$ajax.post('/listShipmentsShopName.action', {limit: 10, page: page || 1, ...this.searchForm})
+            .then((res) => {
+              if (res.data.code === 1) {
+                const pagination = {...this.pagination};
+                pagination.total = res.data.count
+                pagination.current = page;
+                this.loading = false;
+                this.tableData = res.data.data;
+                this.pagination = pagination;
+              }
+            })
+        }
       },
       getAllGoods() {
         this.$ajax.post('/listProductAndProductType.action')

@@ -21,11 +21,11 @@
             <el-option label="区级" :value="3"></el-option>
           </el-select>
         </el-form-item>
-        <!--<el-form-item label="角色" prop="roleId">
+        <el-form-item label="角色" prop="roleId" v-if="formData.agentType===0">
           <el-select v-model="formData.roleId">
             <el-option v-for="item of roles" :label="item.name" :value="item.id" :key="item.id"></el-option>
           </el-select>
-        </el-form-item>-->
+        </el-form-item>
         <el-form-item v-if="formData.agentType!==0" label="区域" prop="areaId">
           <el-cascader v-model="formData.area" :options="area" @change="selectArea"></el-cascader>
         </el-form-item>
@@ -68,15 +68,15 @@
     </el-dialog>
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
-        <el-form-item>
+        <el-form-item v-if="($store.state.permission.indexOf(70407) !== -1)">
           <el-select v-model="searchForm.userType" @change="fetch()">
             <el-option label="本店用户" :value="4"></el-option>
             <el-option label="分店区域经理" :value="5"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
-      <el-button type="primary" size="small" round @click="openDialog">新建区域经理</el-button>
-      <el-button type="primary" size="small" round @click="openDialog(0)">新建普通用户</el-button>
+      <el-button v-if="($store.state.permission.indexOf(70407) !== -1)" type="primary" size="small" round @click="openDialog">新建区域经理</el-button>
+      <el-button v-if="($store.state.permission.indexOf(70407) !== -1)" type="primary" size="small" round @click="openDialog(0)">新建普通用户</el-button>
     </div>
     <el-table :data="tableData" style="width: 100%" v-loading="loading">
       <el-table-column prop="id" label="编号"></el-table-column>

@@ -16,7 +16,7 @@ const instance = axios.create({
 })
 // http response 拦截器
 const res = response => {
-  if (response.data.code === -2) {
+  if (response.data.code === -2 || response.status === 302) {
     window.$Vue.$router.push({path: '/login'})
     window.$Vue.$message.error(response.data.msg)
   } else if (response.data.code !== 1) {

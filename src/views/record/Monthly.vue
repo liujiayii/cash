@@ -1,6 +1,12 @@
 <template>
   <div>
     <el-form :inline="true" :model="searchForm">
+      <el-form-item v-if="($store.state.permission.indexOf(71001) !== -1)">
+        <el-select v-model="searchForm.shopId">
+          <el-option v-for="item of mallList" :key="item.shopId" :label="item.name" :value="item.id"
+                     placeholder="选择店铺"></el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="日期">
         <el-date-picker v-model="searchForm.createTime" value-format="timestamp" type="month"
                         placeholder="选择月份"></el-date-picker>
@@ -19,10 +25,15 @@
     </el-form>
     <div style="display: flex">
       <el-card header="总销售金额" style="width: 200px" shadow="hover">
-        <div>{{money.sumOrderMoney}}</div>
+        <div>{{money.sumOrderMoney}}元</div>
       </el-card>
-      <el-card header="订单总量" style="width: 200px;margin-left: 10px" shadow="hover">
-        <div>{{money.sumOrder}}</div>
+      <el-card header="订单总量" style="width: 200px;margin:0 10px" shadow="hover">
+        <div>{{money.sumOrder}}件</div>
+      </el-card>
+    </div>
+    <div style="display: flex;margin-top: 10px">
+      <el-card style="height: 500px;width: 30%;margin: 0 10px 0 0" shadow="hover" header="当月销售商品销量占比图">
+        <div id="c1"></div>
       </el-card>
       <el-card shadow="hover" header="当月商品销量前十">
         <ul>
@@ -34,24 +45,22 @@
         </ul>
       </el-card>
     </div>
-    <div>
-      <el-card style="height: 500px;width: 30%" shadow="hover" header="当月销售商品销量占比图">
-        <div id="c1"></div>
-      </el-card>
-    </div>
   </div>
 </template>
 
 <script>
   import G2 from '@antv/g2';
+  import {mixin} from "../../config/utils";
 
   export default {
     name: "Monthly",
+    mixins: [mixin],
     data() {
       return {
-        searchForm: {},
+        searchForm: {createTime: new Date().getTime()},
         topList: [],
-        money: []
+        money: [],
+        mallList: [],
       }
     },
     methods: {
@@ -113,17 +122,32 @@
           })
       },
       getMoney() {
-        this.$ajax.post('/getOrderAndSumOrderMoney.action', {...this.searchForm})
+        this.$ajax.post('/getOrderAndSumOrderMoney.action', {
+          ...this.searchForm,
+          createTime: this.formatDate(new Date(this.searchForm.createTime), 'yyyy-MM-dd hh:mm:ss.S')
+        })
           .then((res) => {
             if (res.data.code === 1) {
               this.money = res.data.data
             }
           })
-      }
+      },
+      getAllMall() {
+        if (this.$store.state.permission.indexOf(71001) !== -1) {
+          this.$ajax.post('/listShopIdAndName.action', {page: 1, limit: 100})
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.mallList = res.data.data
+              }
+            })
+        }
+      },
     },
     mounted() {
       this.getPie()
       this.getTop()
+      this.getAllMall()
+      this.getMoney()
     }
   }
 </script>

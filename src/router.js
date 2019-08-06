@@ -5,10 +5,7 @@ import NProgress from 'nprogress'
 Vue.use(VueRouter)
 
 const router = new VueRouter({
-  routes: [{
-    path: '/',
-    redirect: '/login'
-  },
+  routes: [{path: '/', redirect: '/login'},
     {
       path: '/login',
       name: 'login',
@@ -16,21 +13,15 @@ const router = new VueRouter({
     }, {
       path: '',
       component: () => import('@/views/layout/Layout'),
-      children: [
-        {
-          component: () => import('@/views/exception/404'),
-          name: "404",
-          path: "/404",
-        }, {
-          component: () => import('@/views/exception/403'),
-          name: "403",
-          path: "/403",
-        }, {
-          component: () => import('@/views/exception/500'),
-          name: "500",
-          path: "/500",
-        }
-      ]
+      children: [{
+        component: () => import('@/views/exception/404'),
+        name: "404",
+        path: "/404",
+      }, {
+        component: () => import('@/views/exception/403'),
+        name: "403",
+        path: "/403",
+      }, {component: () => import('@/views/exception/500'), name: "500", path: "/500",}]
     }, {
       path: '*',
       redirect: '/404'
@@ -39,7 +30,6 @@ const router = new VueRouter({
 // 前端路由表
 const constantRouterComponents = {
   Layout: () => import('@/views/layout/Layout'),
-  // 你需要动态引入的页面组件
   Home: () => import('@/views/home/Home'),
   /*优惠管理*/
   DiscountList: () => import('@/views/discount/DiscountList'),
@@ -61,6 +51,7 @@ const constantRouterComponents = {
   Mall: () => import('@/views/system/Mall'),
   Member: () => import('@/views/system/Member'),
   Role: () => import('@/views/system/Role'),
+  Level: () => import('@/views/system/Level'),
   User: () => import('@/views/system/User'),
   Access: () => import('@/views/system/Access'),
 }
@@ -76,7 +67,7 @@ const generator = (routerMap, parent) => {
       // 该路由对应页面的 组件
       component: constantRouterComponents[parent ? item.name : 'Layout'],
       // meta: 页面标题, 菜单图标, 页面权限(供指令权限用，可去掉)
-      meta: {title: parent && parent.name || ''}
+      meta: {access: item.access || ''}
     }
     // 重定向
     item.redirect && (currentRouter.redirect = item.redirect)
@@ -90,65 +81,45 @@ const generator = (routerMap, parent) => {
     return currentRouter
   })
 }
-const menuData = [
+const menuData = [/*access对应后端的权限实现菜单的v-if隐藏（写的真垃圾）*/
   {
     icon: "el-icon-s-home",
     name: "",
-    children: [
-      {name: "Home"}
-    ]
-  },
-  {
+    children: [{name: "Home"}]
+  }, {
     icon: "el-icon-s-custom",
     name: "System",
-    children: [
-      {name: "Mall"},
-      {name: "Member"},
-      {name: "Role"},
-      {name: "User"},
-      {name: "Access"}
-    ]
-  },
-  {
+    children: [{
+      name: "Mall",
+      access: 70302
+    }, {name: "Member"}, {name: "Level", access: 30302}, {name: "Role"}, {name: "User"}, {
+      name: "Access",
+      access: 71002
+    }]
+  }, {
     icon: "el-icon-shopping-bag-1",
     name: "Goods",
-    children: [
-      {name: "GoodsList"},
-      {name: "GoodsSort"}
-    ]
+    children: [{name: "GoodsList"}, {name: "GoodsSort"}]
   },
   {
     icon: "el-icon-menu",
     name: "Stock",
-    children: [
-      {name: "StockList"},
-      {name: "Purchase"},
-      {name: "SelfApply"},
-      {name: "OthersApply"}
-    ]
-  },
-  {
+    children: [{name: "StockList"}, {name: "Purchase", access: 20201}, {
+      name: "SelfApply",
+      access: 20102
+    }, {name: "OthersApply"}]
+  }, {
     icon: "el-icon-coin",
     name: "Discount",
-    children: [
-      {name: "DiscountList"}
-    ]
-  },
-  {
+    children: [{name: "DiscountList"}]
+  }, {
     icon: "el-icon-document",
     name: "Record",
-    children: [
-      {name: "Operation"},
-      {name: "Daily"},
-      {name: "Monthly"}
-    ]
-  },
-  {
+    children: [{name: "Operation"}, {name: "Daily"}, {name: "Monthly"}]
+  }, {
     icon: "el-icon-edit-outline",
     name: "Finance",
-    children: [
-      {name: "Order"}
-    ]
+    children: [{name: "Order"}]
   }
 ]
 /* 路由守卫 */
@@ -157,7 +128,6 @@ router.beforeEach((to, form, next) => {
   NProgress.start()
   if ((to.path !== '/404') && (to.path !== '/login')) {
     window.sessionStorage.setItem('path', to.path)
-    window.sessionStorage.setItem('query', JSON.stringify(to.query))
   }
   if (!window.sessionStorage.getItem('userName') && to.path !== '/login') {
     return next({path: '/login'})
@@ -172,5 +142,4 @@ router.beforeEach((to, form, next) => {
 router.afterEach(() => {
   NProgress.done()
 })
-
 export {menuData, router}

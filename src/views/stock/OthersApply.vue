@@ -22,7 +22,7 @@
       </el-table>
       <div slot="footer" class="dialog-footer">
         <template v-if="showIndex.transportationState===1">
-          <el-button type="success" @click="changeState()">转 移</el-button>
+          <el-button v-if="($store.state.permission.indexOf(20405) !== -1)" type="success" @click="changeState()">转 移</el-button>
           <el-button type="success" @click="changeState(2)">通 过</el-button>
           <el-button type="danger" @click="changeState(4)">拒 绝</el-button>
         </template>
@@ -180,12 +180,14 @@
           })
       },
       getMall() {
-        this.$ajax.post('/listShopIdAndName.action')
-          .then((res) => {
-            if (res.data.code === 1) {
-              this.mallList = res.data.data
-            }
-          })
+        if (this.$store.state.permission.indexOf(71001) !== -1) {
+          this.$ajax.post('/listShopIdAndName.action')
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.mallList = res.data.data
+              }
+            })
+        }
       },
       submit() {
         if (this.formData.receivingShopId === this.showIndex.shipmentsShopId) {

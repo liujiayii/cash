@@ -16,9 +16,9 @@
     </el-dialog>
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
-        <el-form-item>
+        <el-form-item v-if="($store.state.permission.indexOf(71001) !== -1)">
           <el-select v-model="searchForm.shopId">
-            <el-option v-for="item of mallList" :key="item.shopId" :label="item.shopName" :value="item.shopId"
+            <el-option v-for="item of mallList" :key="item.shopId" :label="item.name" :value="item.id"
                        placeholder="选择店铺"></el-option>
           </el-select>
         </el-form-item>
@@ -123,12 +123,14 @@
           })
       },
       getAllMall() {
-        this.$ajax.post('/listAgentShop.action', {page: 1, limit: 100})
-          .then((res) => {
-            if (res.data.code === 1) {
-              this.mallList = res.data.data
-            }
-          })
+        if (this.$store.state.permission.indexOf(71001) !== -1) {
+          this.$ajax.post('/listShopIdAndName.action', {page: 1, limit: 100})
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.mallList = res.data.data
+              }
+            })
+        }
       },
     },
     mounted() {

@@ -39,6 +39,7 @@ const en_US = {
     Member: 'Member',
     Role: 'Role',
     User: 'User',
+    Level: 'Level',
     Access: 'Access'
   },
 }
@@ -80,6 +81,7 @@ const zh_CN = {
     Mall: '店铺管理',
     Member: '会员管理',
     Role: '角色管理',
+    Level: '会员等级',
     User: '用户管理',
     Access: '权限管理'
   },

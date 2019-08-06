@@ -95,12 +95,14 @@
           })
       },
       fetch4() {
-        this.$ajax.post('/listShipmentsShopName.action', {limit: 10, page: 1, transportationState: 1})
-          .then((res) => {
-            if (res.data.code === 1) {
-              this.tableData4 = res.data.data
-            }
-          })
+        if (this.$store.state.permission.indexOf(20102) !== -1) {
+          this.$ajax.post('/listShipmentsShopName.action', {limit: 10, page: 1, transportationState: 1})
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.tableData4 = res.data.data
+              }
+            })
+        }
       },
     },
     mounted() {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="top">
-      <el-button type="primary" size="small" round @click="dialogFormVisible=true">新建</el-button>
+      <el-button v-if="($store.state.permission.indexOf(10103) !== -1)" type="primary" size="small" round @click="dialogFormVisible=true">新建</el-button>
     </div>
     <el-dialog :visible.sync="dialogFormVisible" @closed="formData={}" append-to-body>
       <el-form :model="formData" :rules="rules" ref="ruleForm" :inline="true" label-width="120px">

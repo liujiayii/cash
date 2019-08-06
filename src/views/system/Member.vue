@@ -24,7 +24,7 @@
         <el-button type="primary" @click="submit('ruleForm')">确 定</el-button>
       </div>
     </el-dialog>
-    <div class="top">
+    <!--<div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
         <el-form-item>
           <el-input placeholder="请按会员号或手机号查询" type="number" v-model="searchForm.phone"></el-input>
@@ -35,7 +35,7 @@
         </el-form-item>
       </el-form>
       <el-button type="primary" size="small" round @click="dialogFormVisible=true">新建</el-button>
-    </div>
+    </div>-->
     <el-table :data="tableData" style="width: 100%" v-loading="loading">
       <el-table-column prop="id" label="编号"></el-table-column>
       <el-table-column prop="number" label="会员卡号"></el-table-column>
@@ -45,14 +45,19 @@
       <el-table-column prop="totalMoney" label="累计消费"></el-table-column>
       <el-table-column prop="state" label="状态">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.state" active-text="正常" inactive-text="冻结" :active-value="2"
+          <el-switch :disabled="!($store.state.permission.indexOf(70209) !== -1)" v-model="scope.row.state"
+                     active-text="正常" inactive-text="冻结" :active-value="2"
                      :inactive-value="1" @change="stateChange(scope.row,$event)"></el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button @click="handleDelete(scope.row)" type="text" size="small">删除</el-button>
+          <el-button v-if="($store.state.permission.indexOf(70208) !== -1)" type="text" size="small"
+                     @click="handleEdit(scope.row)">编辑
+          </el-button>
+          <el-button v-if="($store.state.permission.indexOf(70210) !== -1)" @click="handleDelete(scope.row)" type="text"
+                     size="small">删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>

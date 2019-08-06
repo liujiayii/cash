@@ -8,14 +8,16 @@
         <el-table-column prop="productCount" label="商品数量"></el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
       </div>
     </el-dialog>
     <div class="top">
       <el-form :inline="true" :model="searchForm" size="small">
-        <el-form-item>
-          <el-input placeholder="输入店铺查询" type="text" v-model="searchForm.shopName"></el-input>
+        <el-form-item v-if="($store.state.permission.indexOf(71001) !== -1)">
+          <el-select v-model="searchForm.shopId">
+            <el-option v-for="item of mallList" :key="item.shopId" :label="item.name" :value="item.id"
+                       placeholder="选择店铺"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-input placeholder="输入订单号查询" type="text" v-model="searchForm.number"></el-input>
@@ -75,7 +77,8 @@
         loading: false,
         searchForm: {},
         dialogFormVisible: false,
-        tableData2: []
+        tableData2: [],
+        mallList: [],
       }
     },
     methods: {
@@ -106,9 +109,20 @@
             }
           })
       },
+      getAllMall() {
+        if (this.$store.state.permission.indexOf(71001) !== -1) {
+          this.$ajax.post('/listShopIdAndName.action', {page: 1, limit: 100})
+            .then((res) => {
+              if (res.data.code === 1) {
+                this.mallList = res.data.data
+              }
+            })
+        }
+      },
     },
     mounted() {
       this.fetch()
+      this.getAllMall()
     }
   }
 </script>

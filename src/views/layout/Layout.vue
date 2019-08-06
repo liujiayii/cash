@@ -40,7 +40,8 @@
                   <span>{{$t(`routerName.${item.name}`) }}</span>
                 </template>
                 <template v-for="item_c of item.children">
-                  <el-menu-item :index="`/${item.name}/${item_c.name}`" :key="item_c.name">
+                  <el-menu-item :index="`/${item.name}/${item_c.name}`" :key="item_c.name"
+                                v-if="($store.state.permission.indexOf(item_c.access) !== -1) || !item_c.access">
                     {{$t(`routerName.${item_c.name}`) }}
                   </el-menu-item>
                 </template>
@@ -94,7 +95,7 @@
     methods: {
       getAllAccess() {
         if (!sessionStorage.getItem('access')) {
-          this.$ajax.post('/listAllPermissions.action')
+          this.$ajax.post('/getRolePermissions.action')
             .then((res) => {
               if (res.data.code === 1) {
                 const generator = (access, parent) => {
@@ -109,7 +110,7 @@
                     return current
                   })
                 }
-                const access = generator(res.data.data)
+                const access = generator(res.data.listRolePermissions)
                 sessionStorage.setItem('access', JSON.stringify(access))
               }
             })
